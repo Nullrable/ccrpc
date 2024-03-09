@@ -10,6 +10,7 @@
 
     <packaging>jar</packaging>
 
+    <groupId>ccrpc</groupId>
     <artifactId>ccrpc-demo-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
