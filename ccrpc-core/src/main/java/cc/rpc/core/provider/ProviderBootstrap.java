@@ -11,6 +11,7 @@ import java.util.Map;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 /**
  * @author nhsoft.lsd
@@ -25,7 +26,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CcProvider.class);
 
         providers.values().forEach(
-                x -> genInterface(x)
+                this::genInterface
         );
     }
 
@@ -40,16 +41,18 @@ public class ProviderBootstrap implements ApplicationContextAware {
         Object bean = skeleton.get(request.getClazz());
         try {
 
-            Method method =  Arrays.stream(bean.getClass().getMethods()).filter(m -> m.getName().equals(request.getMethod())).findFirst().orElse(null);
+            Method method = Arrays.stream(bean.getClass().getMethods()).filter(m -> m.getName().equals(request.getMethod())).findFirst().orElse(null);
             if (method == null) {
-                return new RpcResponse(false, "method not found");
+                return new RpcResponse(false, "method not found", null);
             }
             Object result = method.invoke(bean, request.getArgs());
-            return new RpcResponse(true, result);
+            return new RpcResponse(true, result, null);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
         }
     }
 }

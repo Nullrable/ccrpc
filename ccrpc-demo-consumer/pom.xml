@@ -2,15 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>ccrpc</groupId>
         <artifactId>ccrpc</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <packaging>jar</packaging>
-
-    <artifactId>ccrpc-demo-api</artifactId>
+    <artifactId>ccrpc-demo-consumer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
@@ -19,7 +18,7 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <dependency>
@@ -27,6 +26,7 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -35,8 +35,11 @@
 
         <dependency>
             <groupId>ccrpc</groupId>
-            <artifactId>ccrpc-core</artifactId>
+            <artifactId>ccrpc-demo-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
     </dependencies>
+
+
 </project>

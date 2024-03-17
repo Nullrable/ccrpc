@@ -6,23 +6,25 @@ import cc.rpc.core.provider.ProviderBootstrap;
 import jakarta.annotation.Resource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @RestController
-public class CcrpcDemoProviderApplication {
+@ComponentScan("cc.rpc")
+public class CcRpcDemoProviderApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CcrpcDemoProviderApplication.class, args);
+        SpringApplication.run(CcRpcDemoProviderApplication.class, args);
     }
 
     @Resource
-    ProviderBootstrap providerBootstrap;
+    private ProviderBootstrap providerBootstrap;
 
 
-    @GetMapping("/invoke")
+    @PostMapping("/invoke")
     public RpcResponse invoke(@RequestBody RpcRequest request) {
 
        return providerBootstrap.invoke(request);

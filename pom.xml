@@ -25,6 +25,7 @@
         <module>ccrpc-core</module>
         <module>ccrpc-demo-api</module>
         <module>ccrpc-demo-provider</module>
+        <module>ccrpc-demo-consumer</module>
     </modules>
 
 </project>

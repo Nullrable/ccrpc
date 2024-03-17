@@ -5,5 +5,7 @@ package cc.rpc.demo.api;
  */
 public interface UserService {
 
-    public User findById(Integer id);
+    User findById(Integer id);
+
+    int findId(Integer id);
 }
