@@ -29,6 +29,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     private void genInterface(final Object x) {
+        //TODO nhsoft.lsd 这里可能实现多个接口，需要改造
         Class<?> itfer = x.getClass().getInterfaces()[0];
         skeleton.put(itfer.getCanonicalName(), x);
     }
@@ -45,6 +46,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
             if (method == null) {
                 return new RpcResponse(false, "method not found", null);
             }
+
+            //TODO nhsoft.lsd  request.getArgs() 类型匹配
             Object result = method.invoke(bean, request.getArgs());
             return new RpcResponse(true, result, null);
         } catch (InvocationTargetException e) {

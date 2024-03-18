@@ -45,10 +45,13 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         RpcResponse rpcResponse = JSON.parseObject(respJson, RpcResponse.class);
 
         if (rpcResponse.isStatus()) {
+
+
             Object data = rpcResponse.getData();
             if (data instanceof JSONObject jsonObject) {
                return jsonObject.toJavaObject(method.getReturnType());
             } else {
+                //TODO 返回结果类型匹配
                 return data;
             }
         } else {
