@@ -21,4 +21,9 @@ public class UserServiceImpl implements UserService {
     public int findId(final Integer id) {
         return id;
     }
+
+    @Override
+    public int findId(final Integer id, final String name) {
+        return 0;
+    }
 }

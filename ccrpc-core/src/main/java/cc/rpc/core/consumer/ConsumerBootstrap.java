@@ -6,7 +6,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,25 +25,26 @@ public class ConsumerBootstrap implements ApplicationContextAware {
     @Resource
     private ConsumerConfig consumerConfig;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    public void start() {
         String[] beanNames = applicationContext.getBeanDefinitionNames();
 
         for (String beanName : beanNames) {
 
-            if (beanName.equals("createConsumerBootstrap")) {
-                return;
-            }
+//            //TODO nhsoft.lsd 循环应用，这里需要改为更好的方式. 改为延后启动，不能在spring本身管理实例化的过程中
+//            if (beanName.equals("createConsumerBootstrap")) {
+//                return;
+//            }
 
             Object bean = applicationContext.getBean(beanName);
 
             System.out.println(beanName + "====> " + bean.getClass().getCanonicalName());
 
             Class clazz = bean.getClass();
-
-            if (beanName.equals("ccRpcDemoConsumerApplication")) {
-                System.out.println("1231232");
-            }
 
             while (clazz != null) {
 
@@ -61,7 +61,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                         RpcContext context = new RpcContext();
                         //TODO nhsoft.lsd
 
-                        Object proxy = Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CcRpcInvocationHandler(service, context, List.of(consumerConfig.getProvider())));
+                        Object proxy = Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CcRpcInvocationHandler(service, context, consumerConfig.getProviders()));
 
                         if (!stub.containsKey(serviceName)) {
                             stub.put(serviceName, proxy);
@@ -75,15 +75,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                         }
                     }
                 }
-
                 clazz = clazz.getSuperclass();
             }
-
         }
-    }
-
-    @Override
-    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

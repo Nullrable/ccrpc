@@ -3,6 +3,7 @@ package cc.rpc.core.provider;
 import cc.rpc.core.annotation.CcProvider;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
+import cc.rpc.core.util.MethodUtil;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -11,7 +12,6 @@ import java.util.Map;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
 
 /**
  * @author nhsoft.lsd
@@ -25,9 +25,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CcProvider.class);
 
-        providers.values().forEach(
-                this::genInterface
-        );
+        providers.values().forEach(this::genInterface);
     }
 
     private void genInterface(final Object x) {
@@ -36,12 +34,14 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     public RpcResponse invoke(final RpcRequest request) {
-
-
         Object bean = skeleton.get(request.getClazz());
         try {
 
-            Method method = Arrays.stream(bean.getClass().getMethods()).filter(m -> m.getName().equals(request.getMethod())).findFirst().orElse(null);
+            //TODO nhsoft.lsd 这里需要缓存，反射获取影响性能
+            Method method = Arrays.stream(bean.getClass().getDeclaredMethods()).filter(m -> {
+                //过滤本地Object方法和方法前面
+                return !MethodUtil.checkLocalMethod(m) && MethodUtil.methodSign(m).equals(request.getMethodSign());
+            }).findFirst().orElse(null);
             if (method == null) {
                 return new RpcResponse(false, "method not found", null);
             }
