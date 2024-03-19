@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String findId(final Integer id, final String name) {
-        return id + "_"  + name;
+        return id + "_" + name;
     }
 
     @Override
@@ -86,5 +86,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public Integer findInteger(final long id) {
         return Integer.valueOf(String.valueOf(id));
+    }
+
+    @Override
+    public User[] arrayUser() {
+        return new User[]{new User(1, "1231232")};
     }
 }

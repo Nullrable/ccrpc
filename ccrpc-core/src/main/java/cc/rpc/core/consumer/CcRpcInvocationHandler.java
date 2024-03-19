@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import okhttp3.ResponseBody;
@@ -60,29 +61,41 @@ public class CcRpcInvocationHandler implements InvocationHandler {
             Object data = rpcResponse.getData();
             if (data instanceof JSONObject jsonObject) {
                 if (method.getReturnType().isAssignableFrom(Map.class)) {
-                    return jsonObject.getInnerMap();
+                    Map resultMap = new HashMap();
+                    Type genericReturnType = method.getGenericReturnType();
+                    if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                        Class<?> keyType = (Class<?>)parameterizedType.getActualTypeArguments()[0];
+                        Class<?> valueType = (Class<?>)parameterizedType.getActualTypeArguments()[1];
+                        System.out.println("keyType  : " + keyType);
+                        System.out.println("valueType: " + valueType);
+                        jsonObject.entrySet().stream().forEach(
+                                e -> {
+                                    Object key = TypeUtil.cast(keyType, e.getKey());
+                                    Object value = TypeUtil.cast(valueType, e.getValue());
+                                    resultMap.put(key, value);
+                                }
+                        );
+                    }
+                    return resultMap;
                 }
                 return jsonObject.toJavaObject(method.getReturnType());
             } else if (data instanceof JSONArray jsonArray) {
                 if (method.getReturnType().isArray()) {
                     Object array = Array.newInstance(method.getReturnType().getComponentType(), jsonArray.size());
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        Array.set(array, i, jsonArray.get(i));
+                        Object o = jsonArray.get(i);
+                        Array.set(array, i, TypeUtil.cast(method.getReturnType().getComponentType(), o));
                     }
                     return array;
                 } else if (method.getReturnType().isAssignableFrom(List.class)) {
-                    Type genericSuperclass = method.getReturnType().getGenericSuperclass();
+                    Type genericSuperclass = method.getGenericReturnType();
                     if (genericSuperclass instanceof ParameterizedType parameterizedType) {
                         Type[] typeArguments = parameterizedType.getActualTypeArguments();
                         Class<?> genericClass = (Class<?>) typeArguments[0];
                         // genericClass即为范型类的类型参数
                         return jsonArray.toJavaList(genericClass);
                     } else {
-                        List returnList = new ArrayList();
-                        for (Object o : jsonArray) {
-                            returnList.add(o);
-                        }
-                        return returnList;
+                        return jsonArray.toArray();
                     }
                 }
                 return data;

@@ -30,4 +30,6 @@ public interface UserService {
 
     Integer findInteger(long id);
 
+    User[] arrayUser();
+
 }

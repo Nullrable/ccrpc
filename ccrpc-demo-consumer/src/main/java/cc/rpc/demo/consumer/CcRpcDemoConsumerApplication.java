@@ -46,10 +46,10 @@ public class CcRpcDemoConsumerApplication {
             System.out.println("==============> test2: " + test2);
 
             List<User> test3 = userService.listAll();
-            System.out.println("==============> test3: " + test3);
+            System.out.println("==============> test3: " + test3.get(0).getName());
 
             List<User> test4 = userService.findById(List.of(1, 2, 3));
-            System.out.println("==============> test4: " + test4);
+            System.out.println("==============> test4: " + test4.get(0).getId());
 
             Integer[] test5 = userService.arrayById();
             System.out.println("==============> test5: " + Arrays.toString(test5));
@@ -58,19 +58,22 @@ public class CcRpcDemoConsumerApplication {
             System.out.println("==============> test6: " + test6);
 
             User test7 = userService.read(999);
-            System.out.println("==============> test7: " + test7);
+            System.out.println("==============> test7: " + test7.getId() + "_" + test7.getName());
 
             boolean test8 = userService.save(new User(1, "2"));
             System.out.println("==============> test8: " + test8);
 
             Map<String, User> test9 = userService.map(new User(1, "131232"));
-            System.out.println("==============> test9: " + test9);
+            System.out.println("==============> test9: " + test9.get("test").getId() + "_" + test9.get("test").getId());
 
             double test10 = userService.findDouble(888);
             System.out.println("==============> test10: " + test10);
 
             double test11 = userService.findInteger(888);
             System.out.println("==============> test11: " + test11);
+
+            User[] users = userService.arrayUser();
+            System.out.println("==============> test11: " + users[0].getName());
         };
     }
 }
