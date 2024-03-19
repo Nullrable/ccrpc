@@ -35,19 +35,17 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     private void genInterface(final Object service) {
-        //TODO nhsoft.lsd 这里可能实现多个接口，需要改造
-        Class<?> itfer = service.getClass().getInterfaces()[0];
+        Class<?>[] itfers = service.getClass().getInterfaces();
 
-        for (Method method : itfer.getMethods()) {
-
-            if (MethodUtil.checkLocalMethod(method)) {
-                continue;
+        Arrays.stream(itfers).forEach(itfer -> {
+            for (Method method : itfer.getMethods()) {
+                if (MethodUtil.checkLocalMethod(method)) {
+                    continue;
+                }
+                ProviderMeta meta = createProviderMeta(method, service);
+                skeleton.add(itfer.getCanonicalName(), meta);
             }
-
-            ProviderMeta meta = createProviderMeta(method, service);
-
-            skeleton.add(itfer.getCanonicalName(), meta);
-        }
+        });
     }
 
     private ProviderMeta createProviderMeta(final Method method, Object service) {

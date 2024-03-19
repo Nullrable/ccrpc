@@ -22,7 +22,6 @@ public class TypeUtil {
 
        if (origin.isArray()) {
            if (arg instanceof List<?> argList) {
-
                Object array =  Array.newInstance(origin.getComponentType(), argList.size());
                for (int i = 0; i < argList.size(); i++) {
                    Array.set(array, i, argList.get(i));
@@ -39,7 +38,6 @@ public class TypeUtil {
             return jsonObject.toJavaObject(origin);
         }
 
-        //TODO 返回结果类型匹配
         if (origin.equals(Double.class)  || origin.equals(double.class)) {
             return Double.valueOf(arg.toString());
         }else if (origin.equals(Float.class)  || origin.equals(float.class)) {

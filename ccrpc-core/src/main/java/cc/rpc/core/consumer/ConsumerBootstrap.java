@@ -35,7 +35,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
         for (String beanName : beanNames) {
 
-//            //TODO nhsoft.lsd 循环应用，这里需要改为更好的方式. 改为延后启动，不能在spring本身管理实例化的过程中
+//            //循环应用，这里需要改为更好的方式. 改为延后启动，不能在spring本身管理实例化的过程中
 //            if (beanName.equals("createConsumerBootstrap")) {
 //                return;
 //            }
