@@ -22,7 +22,7 @@ public class MethodUtil {
         return false;
     }
 
-    public static String methodSign(Method method) {
+    public static String methodSign(final Method method) {
         StringBuilder sb = new StringBuilder(method.getName());
         sb.append("@").append(method.getParameterCount());
         Arrays.stream(method.getParameterTypes()).forEach(
