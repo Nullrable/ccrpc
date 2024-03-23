@@ -30,10 +30,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> listAll() {
         List<User> users = new ArrayList<>();
-        User user = new User(1, "LSD");
+        User user = new User(1, "LSD" + System.getProperty("server.port"));
         users.add(user);
 
-        User user2 = new User(2, "LSD2");
+        User user2 = new User(2, "LSD2"+ System.getProperty("server.port"));
         users.add(user2);
         return users;
     }
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     public List<User> findById(final List<Integer> ids) {
         List<User> users = new ArrayList<>();
         ids.forEach(id -> {
-            users.add(new User(id, id + "_LSD"));
+            users.add(new User(id, id + "_LSD"+ System.getProperty("server.port")));
         });
         return users;
     }
@@ -56,14 +56,14 @@ public class UserServiceImpl implements UserService {
     public List<User> findByArray(final Integer[] ids) {
         List<User> users = new ArrayList<>();
         Arrays.stream(ids).forEach(id -> {
-            users.add(new User(id, id + "_LSD"));
+            users.add(new User(id, id + "_LSD"+ System.getProperty("server.port")));
         });
         return users;
     }
 
     @Override
     public User read(final Integer id) {
-        return new User(id, id + "_LSD");
+        return new User(id, id + "_LSD" + System.getProperty("server.port"));
     }
 
     @Override
@@ -90,6 +90,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User[] arrayUser() {
-        return new User[]{new User(1, "1231232")};
+        return new User[]{new User(1, "LSD Array" + System.getProperty("server.port"))};
     }
 }

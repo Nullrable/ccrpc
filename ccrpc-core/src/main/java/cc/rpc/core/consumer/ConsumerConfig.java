@@ -1,5 +1,7 @@
 package cc.rpc.core.consumer;
 
+import cc.rpc.core.api.LoadBalancer;
+import cc.rpc.core.api.Router;
 import java.util.List;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +18,8 @@ import org.springframework.core.annotation.Order;
 @Data
 public class ConsumerConfig {
 
-    @Value("${ccrpc.provider:null}")
-    private List<String> providers;
+    @Value("${ccrpc.providers:null}")
+    private String providers;
 
     @Bean
     ConsumerBootstrap createConsumerBootstrap() {
@@ -29,5 +31,14 @@ public class ConsumerConfig {
         return x -> {
             consumerBootstrap.start();
         };
+    }
+
+    @Bean
+    public LoadBalancer loadBalancer() {
+        return LoadBalancer.Default;
+    }
+    @Bean
+    public Router router() {
+        return Router.Default;
     }
 }

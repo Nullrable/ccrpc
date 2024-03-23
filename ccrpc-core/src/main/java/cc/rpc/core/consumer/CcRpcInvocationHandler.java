@@ -39,7 +39,6 @@ public class CcRpcInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
-
         System.out.println(" ===> request " + JSON.toJSONString(args));
 
         RpcRequest request = new RpcRequest();
@@ -47,7 +46,10 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         request.setMethodSign(MethodUtil.methodSign(method));
         request.setArgs(args);
 
-        ResponseBody responseBody = HttpUtil.post(providers.get(0), JSON.toJSONString(request));
+        List<String> routeProviders = context.getRouter().route(providers);
+        String provider = context.getLoadBalancer().choose(routeProviders);
+
+        ResponseBody responseBody = HttpUtil.post(provider, JSON.toJSONString(request));
         if (responseBody == null) {
             throw new RuntimeException("okhttp response body is null");
         }

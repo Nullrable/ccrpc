@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: ccrpc-demo-consumer
+server:
+  port: 8000
+
+ccrpc:
+  providers: http://localhost:9001/demo-provider/invoke,http://localhost:9002/demo-provider/invoke
+

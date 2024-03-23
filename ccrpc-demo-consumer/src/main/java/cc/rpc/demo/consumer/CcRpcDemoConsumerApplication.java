@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @ComponentScan("cc.rpc")
 public class CcRpcDemoConsumerApplication {
 
-
     public static void main(String[] args) {
         SpringApplication.run(CcRpcDemoConsumerApplication.class, args);
     }
