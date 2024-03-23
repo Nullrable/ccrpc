@@ -93,9 +93,36 @@ public class CcRpcInvocationHandler implements InvocationHandler {
                     Type genericSuperclass = method.getGenericReturnType();
                     if (genericSuperclass instanceof ParameterizedType parameterizedType) {
                         Type[] typeArguments = parameterizedType.getActualTypeArguments();
-                        Class<?> genericClass = (Class<?>) typeArguments[0];
-                        // genericClass即为范型类的类型参数
-                        return jsonArray.toJavaList(genericClass);
+
+                        Type actureType = typeArguments[0];
+                        System.out.println("=======> actureType: " + actureType);
+                        if (actureType instanceof Class<?>) {
+                            Class<?> genericClass = (Class<?>) actureType;
+                            // genericClass即为范型类的类型参数
+                            return jsonArray.toJavaList(genericClass);
+                        } else if (actureType instanceof ParameterizedType parameterizedTypeInner) {
+                            List<Object> returnList = new ArrayList<>();
+                            jsonArray.forEach(s -> {
+                                if (s instanceof Map<?, ?> itemMap) {
+                                    Map resultMap = new HashMap();
+
+                                    Class<?> keyType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[0];
+                                    Class<?> valueType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[1];
+                                    System.out.println("=======> map keyType  : " + keyType);
+                                    System.out.println("=======> map valueType: " + valueType);
+
+                                    itemMap.entrySet().forEach(x -> {
+                                        Object key = TypeUtil.cast(keyType, x.getKey());
+                                        Object value = TypeUtil.cast(valueType, x.getValue());
+                                        resultMap.put(key, value);
+                                    });
+                                    returnList.add(resultMap);
+                                } else {
+                                    System.out.println("not match " + s);
+                                }
+                            });
+                            return returnList;
+                        }
                     } else {
                         return jsonArray.toArray();
                     }

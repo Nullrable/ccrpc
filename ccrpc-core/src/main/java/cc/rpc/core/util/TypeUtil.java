@@ -1,7 +1,10 @@
 package cc.rpc.core.util;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +13,7 @@ import java.util.Map;
  */
 public class TypeUtil {
 
-    public static Object cast(Class origin, Object arg) {
+    public static Object cast(Class<?> origin, Object arg) {
 
         if (arg == null) {
             return null;

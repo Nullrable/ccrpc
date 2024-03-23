@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 public class UserServiceImpl implements UserService {
 
     @Override
-    public int findId(final Integer id) {
-        return id;
+    public String findId(final Integer id) {
+        return System.getProperty("server.port");
     }
 
     @Override
@@ -91,5 +91,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public User[] arrayUser() {
         return new User[]{new User(1, "LSD Array" + System.getProperty("server.port"))};
+    }
+
+    @Override
+    public List<User> saveList(final List<User> userList, int id) {
+        userList.forEach(user -> System.out.println(user.getName()+ "_FromConsumer"));
+
+        return userList;
+    }
+
+    @Override
+    public Map<String, User> saveMap(final Map<String, User> map) {
+        map.values().forEach(user -> System.out.println("saveMap====>" + user.getName()+ "_FromConsumer"));
+        return map;
+    }
+
+    @Override
+    public List<Map<String, User>> saveMapList(final List<Map<String, User>> mapList) {
+        mapList.forEach(map ->  map.values().forEach(user -> System.out.println("saveMapList====>" + user.getName()+ "_FromConsumer")));
+        return mapList;
     }
 }

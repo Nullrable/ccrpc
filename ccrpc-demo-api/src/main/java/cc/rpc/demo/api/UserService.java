@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public interface UserService {
 
-    int findId(Integer id);
+    String findId(Integer id);
 
     String findId(Integer id, String name);
 
@@ -31,5 +31,11 @@ public interface UserService {
     Integer findInteger(long id);
 
     User[] arrayUser();
+
+    List<User> saveList(List<User> userList, int id);
+
+    Map<String, User> saveMap(Map<String, User> map);
+
+    List<Map<String, User>> saveMapList(List<Map<String, User>> mapList);
 
 }

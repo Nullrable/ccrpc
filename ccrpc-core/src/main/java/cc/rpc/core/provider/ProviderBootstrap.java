@@ -6,10 +6,15 @@ import cc.rpc.core.api.RpcResponse;
 import cc.rpc.core.meta.ProviderMeta;
 import cc.rpc.core.util.MethodUtil;
 import cc.rpc.core.util.TypeUtil;
+import com.alibaba.fastjson.util.ParameterizedTypeImpl;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.BeansException;
@@ -92,8 +97,67 @@ public class ProviderBootstrap implements ApplicationContextAware {
         Object[] result = new Object[args.length];
         for (int i = 0; i < method.getParameterTypes().length; i++) {
 
-            Object arg = TypeUtil.cast(method.getParameterTypes()[i], args[i]);
-            result[i] = arg;
+            Class parameterClass = method.getParameterTypes()[i];
+            Object parameter = args[i];
+            if (parameter instanceof List parameterList) {
+              Type genericParameterTypes =  method.getGenericParameterTypes()[i];
+              if (genericParameterTypes instanceof ParameterizedType parameterizedType) {
+
+                  Type actureType = parameterizedType.getActualTypeArguments()[0];
+
+                  if (actureType instanceof Class<?>) {
+                      System.out.println("=======> list type  : " + actureType);
+                      List<Object> returnList = new ArrayList<>();
+                      parameterList.forEach(x -> {
+                          returnList.add(TypeUtil.cast((Class<?>)actureType, x));
+                      });
+                      result[i] = returnList;
+                  } else if(actureType instanceof ParameterizedType parameterizedTypeInner) {
+                      List<Object> returnList = new ArrayList<>();
+                      parameterList.forEach(s -> {
+                          if ( s instanceof Map<?, ?> itemMap) {
+                              Map resultMap = new HashMap();
+
+                              Class<?> keyType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[0];
+                              Class<?> valueType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[1];
+                              System.out.println("=======> map keyType  : " + keyType);
+                              System.out.println("=======> map valueType: " + valueType);
+
+                              itemMap.entrySet().forEach(x -> {
+                                  Object key = TypeUtil.cast(keyType, x.getKey());
+                                  Object value = TypeUtil.cast(valueType, x.getValue());
+                                  resultMap.put(key, value);
+                              });
+                              returnList.add(resultMap);
+                          } else {
+                              System.out.println("not match " + s);
+                          }
+                      });
+                      result[i] = returnList;
+                  } else {
+                      System.out.println("=======>未找到泛型" + actureType);
+                  }
+              }
+            } else if (parameter instanceof Map<?, ?> parameterMap) {
+                Map resultMap = new HashMap();
+                Type genericParameterTypes =  method.getGenericParameterTypes()[i];
+                if (genericParameterTypes instanceof ParameterizedType parameterizedType) {
+                    Class<?> keyType = (Class<?>)parameterizedType.getActualTypeArguments()[0];
+                    Class<?> valueType = (Class<?>)parameterizedType.getActualTypeArguments()[1];
+                    System.out.println("=======> map keyType  : " + keyType);
+                    System.out.println("=======> map valueType: " + valueType);
+
+                    parameterMap.entrySet().forEach(x -> {
+                        Object key = TypeUtil.cast(keyType, x.getKey());
+                        Object value = TypeUtil.cast(valueType, x.getValue());
+                        resultMap.put(key, value);
+                    });
+                }
+                result[i] = resultMap;
+            } else {
+                Object arg = TypeUtil.cast(parameterClass, parameter);
+                result[i] = arg;
+            }
         }
         return result;
     }

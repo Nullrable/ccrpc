@@ -2,6 +2,7 @@ package cc.rpc.core.consumer;
 
 import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.Router;
+import cc.rpc.core.cluster.RoundRibbonLoadBalancer;
 import java.util.List;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class ConsumerConfig {
 
     @Bean
     public LoadBalancer loadBalancer() {
-        return LoadBalancer.Default;
+        return new RoundRibbonLoadBalancer();
     }
     @Bean
     public Router router() {
