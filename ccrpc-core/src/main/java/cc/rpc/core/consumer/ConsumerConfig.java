@@ -1,6 +1,7 @@
 package cc.rpc.core.consumer;
 
 import cc.rpc.core.api.LoadBalancer;
+import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.Router;
 import cc.rpc.core.cluster.RoundRibbonLoadBalancer;
 import java.util.List;
@@ -41,5 +42,10 @@ public class ConsumerConfig {
     @Bean
     public Router router() {
         return Router.Default;
+    }
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public RegisterCenter registerCenter() {
+        return new RegisterCenter.StaticRegisterCenter(List.of(providers.split(",")));
     }
 }

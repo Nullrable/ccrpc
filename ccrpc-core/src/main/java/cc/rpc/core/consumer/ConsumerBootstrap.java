@@ -2,6 +2,7 @@ package cc.rpc.core.consumer;
 
 import cc.rpc.core.annotation.CcConsumer;
 import cc.rpc.core.api.LoadBalancer;
+import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.Router;
 import cc.rpc.core.api.RpcContext;
 import jakarta.annotation.PostConstruct;
@@ -43,6 +44,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 //            }
             LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
             Router router = applicationContext.getBean(Router.class);
+            RegisterCenter rc = applicationContext.getBean(RegisterCenter.class);
+
             RpcContext context = new RpcContext();
             context.setRouter(router);
             context.setLoadBalancer(loadBalancer);
@@ -65,7 +68,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                         Class<?> service = field.getType();
                         String serviceName = service.getCanonicalName();
 
-                        Object proxy = Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CcRpcInvocationHandler(service, context, List.of(consumerConfig.getProviders().split(","))));
+                        Object proxy = Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CcRpcInvocationHandler(service, context, rc.fetchAll(serviceName)));
 
                         if (!stub.containsKey(serviceName)) {
                             stub.put(serviceName, proxy);
