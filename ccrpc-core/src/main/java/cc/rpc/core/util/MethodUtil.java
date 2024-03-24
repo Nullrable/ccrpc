@@ -1,7 +1,12 @@
 package cc.rpc.core.util;
 
+import cc.rpc.core.annotation.CcConsumer;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author nhsoft.lsd
@@ -29,5 +34,22 @@ public class MethodUtil {
                 c -> sb.append("_").append(c.getCanonicalName())
         );
         return sb.toString();
+    }
+
+    public static List<Field> findAnnotatedField(Class clazz, final Class<? extends Annotation> annotationClass) {
+
+        List<Field> returnFieldList = new ArrayList<>();
+
+        while (clazz != null) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                boolean isAnnotationPresent = field.isAnnotationPresent(annotationClass);
+                if (isAnnotationPresent) {
+                    returnFieldList.add(field);
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return returnFieldList;
     }
 }
