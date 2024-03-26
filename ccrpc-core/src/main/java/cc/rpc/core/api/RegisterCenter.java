@@ -1,5 +1,8 @@
 package cc.rpc.core.api;
 
+import cc.rpc.core.meta.InstanceMeta;
+import cc.rpc.core.meta.ServiceMeta;
+import cc.rpc.core.registry.ChangedListener;
 import java.util.List;
 
 /**
@@ -11,13 +14,13 @@ public interface RegisterCenter {
 
     void stop();
 
-    void register(String service, String url);
+    void register(ServiceMeta service, InstanceMeta instance);
 
-    void unregister(String service, String url);
+    void unregister(ServiceMeta service, InstanceMeta instance);
 
-    List<String> fetchAll(String service);
+    List<InstanceMeta> fetchAll(ServiceMeta service);
 
-    void subscribe();
+    void subscribe(ServiceMeta service, ChangedListener listener);
 
     class StaticRegisterCenter implements RegisterCenter {
 
@@ -29,7 +32,6 @@ public interface RegisterCenter {
 
         @Override
         public void start() {
-
             System.out.println("register center start");
 
         }
@@ -40,23 +42,23 @@ public interface RegisterCenter {
         }
 
         @Override
-        public void register(final String service, final String url) {
+        public void register(final ServiceMeta service, final InstanceMeta instance) {
 
         }
 
         @Override
-        public void unregister(final String service, final String url) {
+        public void unregister(final ServiceMeta service, final InstanceMeta instance) {
 
         }
 
         @Override
-        public List<String> fetchAll(final String service) {
-            System.out.println(service + " fetch providers from register center");
-            return providers;
+        public List<InstanceMeta> fetchAll(final ServiceMeta service) {
+
+            return null;
         }
 
         @Override
-        public void subscribe() {
+        public void subscribe(final ServiceMeta service, final ChangedListener listener) {
 
         }
     }

@@ -1,23 +1,34 @@
 package cc.rpc.core.provider;
 
 import cc.rpc.core.annotation.CcProvider;
+import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
+import cc.rpc.core.meta.InstanceMeta;
 import cc.rpc.core.meta.ProviderMeta;
+import cc.rpc.core.meta.ServiceMeta;
 import cc.rpc.core.util.MethodUtil;
 import cc.rpc.core.util.TypeUtil;
 import com.alibaba.fastjson.util.ParameterizedTypeImpl;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Data;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.LinkedMultiValueMap;
@@ -27,16 +38,74 @@ import org.springframework.util.TypeUtils;
 /**
  * @author nhsoft.lsd
  */
+@Data
 public class ProviderBootstrap implements ApplicationContextAware {
+
+    private ApplicationContext applicationContext;
 
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
-    @Override
-    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
+    private RegisterCenter registerCenter;
 
+    private InstanceMeta instance;
+
+    @Value("${app.id}")
+    private String app;
+
+    @Value("${app.namespace}")
+    private String namespace;
+
+    @Value("${app.env}")
+    private String env;
+
+
+    public void start() {
+        System.out.println("ProviderBootstrap init");
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CcProvider.class);
-
+        registerCenter = applicationContext.getBean(RegisterCenter.class);
+        providers.keySet().forEach(System.out::println);
         providers.values().forEach(this::genInterface);
+
+        System.out.println("ProviderBootstrap start");
+
+        registerCenter.start();
+
+
+        instance = createInstance();
+
+        skeleton.keySet().forEach(service -> {
+            ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
+            registerCenter.register(serviceMeta, instance);
+        });
+
+    }
+
+    private InstanceMeta createInstance() {
+        //注册服务
+        String ip = null;
+        try {
+            ip = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        String port = System.getProperty("server.port");
+
+        return new InstanceMeta("http", ip, Integer.parseInt(port), null);
+    }
+
+    public void stop() {
+        System.out.println("ProviderBootstrap stop");
+        //取消注册服务
+        skeleton.keySet().forEach(service -> {
+            ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
+            registerCenter.unregister(serviceMeta, instance);
+        });
+        registerCenter.stop();
+    }
+
+    @Override
+    public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
     private void genInterface(final Object service) {
@@ -61,6 +130,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         meta.setMethodSign(MethodUtil.methodSign(method));
 
         System.out.println("注册的方法：" + meta);
+
         return meta;
     }
 
@@ -79,8 +149,10 @@ public class ProviderBootstrap implements ApplicationContextAware {
             Object bean = providerMeta.getService();
 
             //request.getArgs() 类型匹配
-            Object result = method.invoke(bean, cast(method, request.getArgs()));
+            Object result = method.invoke(bean, TypeUtil.requestCast(request.getArgs(), method));
+
             return new RpcResponse(true, result, null);
+
         } catch (InvocationTargetException e) {
             e.printStackTrace();
             return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
@@ -88,77 +160,5 @@ public class ProviderBootstrap implements ApplicationContextAware {
             e.printStackTrace();
             return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
         }
-    }
-
-    private Object[] cast(Method method, Object[] args) {
-        if (args == null) {
-            return null;
-        }
-        Object[] result = new Object[args.length];
-        for (int i = 0; i < method.getParameterTypes().length; i++) {
-
-            Class parameterClass = method.getParameterTypes()[i];
-            Object parameter = args[i];
-            if (parameter instanceof List parameterList) {
-              Type genericParameterTypes =  method.getGenericParameterTypes()[i];
-              if (genericParameterTypes instanceof ParameterizedType parameterizedType) {
-
-                  Type actureType = parameterizedType.getActualTypeArguments()[0];
-
-                  if (actureType instanceof Class<?>) {
-                      System.out.println("=======> list type  : " + actureType);
-                      List<Object> returnList = new ArrayList<>();
-                      parameterList.forEach(x -> {
-                          returnList.add(TypeUtil.cast((Class<?>)actureType, x));
-                      });
-                      result[i] = returnList;
-                  } else if(actureType instanceof ParameterizedType parameterizedTypeInner) {
-                      List<Object> returnList = new ArrayList<>();
-                      parameterList.forEach(s -> {
-                          if ( s instanceof Map<?, ?> itemMap) {
-                              Map resultMap = new HashMap();
-
-                              Class<?> keyType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[0];
-                              Class<?> valueType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[1];
-                              System.out.println("=======> map keyType  : " + keyType);
-                              System.out.println("=======> map valueType: " + valueType);
-
-                              itemMap.entrySet().forEach(x -> {
-                                  Object key = TypeUtil.cast(keyType, x.getKey());
-                                  Object value = TypeUtil.cast(valueType, x.getValue());
-                                  resultMap.put(key, value);
-                              });
-                              returnList.add(resultMap);
-                          } else {
-                              System.out.println("not match " + s);
-                          }
-                      });
-                      result[i] = returnList;
-                  } else {
-                      System.out.println("=======>未找到泛型" + actureType);
-                  }
-              }
-            } else if (parameter instanceof Map<?, ?> parameterMap) {
-                Map resultMap = new HashMap();
-                Type genericParameterTypes =  method.getGenericParameterTypes()[i];
-                if (genericParameterTypes instanceof ParameterizedType parameterizedType) {
-                    Class<?> keyType = (Class<?>)parameterizedType.getActualTypeArguments()[0];
-                    Class<?> valueType = (Class<?>)parameterizedType.getActualTypeArguments()[1];
-                    System.out.println("=======> map keyType  : " + keyType);
-                    System.out.println("=======> map valueType: " + valueType);
-
-                    parameterMap.entrySet().forEach(x -> {
-                        Object key = TypeUtil.cast(keyType, x.getKey());
-                        Object value = TypeUtil.cast(valueType, x.getValue());
-                        resultMap.put(key, value);
-                    });
-                }
-                result[i] = resultMap;
-            } else {
-                Object arg = TypeUtil.cast(parameterClass, parameter);
-                result[i] = arg;
-            }
-        }
-        return result;
     }
 }

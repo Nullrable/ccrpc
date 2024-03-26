@@ -13,7 +13,7 @@ import okhttp3.ResponseBody;
 /**
  * @author nhsoft.lsd
  */
-public class HttpUtil {
+public class HttpInvoker {
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
@@ -21,7 +21,7 @@ public class HttpUtil {
 
     static {
         OkHttpClient okHttpClient = new OkHttpClient.Builder().connectTimeout(1, TimeUnit.SECONDS)//设置连接超时时间
-                .readTimeout(1, TimeUnit.SECONDS)//设置读取超时时间
+                .readTimeout(60, TimeUnit.SECONDS)//设置读取超时时间
                 .build();
     }
 
@@ -30,27 +30,6 @@ public class HttpUtil {
         RequestBody body = RequestBody.create(JSON, json);
 
         Request request = new Request.Builder().url(url).post(body).build();
-
-        try {
-            return okHttpClient.newCall(request).execute().body();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static ResponseBody get(final String url, final Map<String, String> params) {
-        HttpUrl httpUrl = HttpUrl.parse(url);
-        HttpUrl.Builder builder = httpUrl.newBuilder();
-        if (params != null) {
-            for (String key : params.keySet()) {
-                builder.addQueryParameter(key, params.get(key));
-            }
-        }
-
-        Request request = new Request.Builder()
-                .url(builder.build())
-                .build();
 
         try {
             return okHttpClient.newCall(request).execute().body();

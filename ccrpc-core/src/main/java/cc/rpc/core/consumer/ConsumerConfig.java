@@ -20,19 +20,9 @@ import org.springframework.core.annotation.Order;
 @Data
 public class ConsumerConfig {
 
-    @Value("${ccrpc.providers:null}")
-    private String providers;
-
     @Bean
     ConsumerBootstrap createConsumerBootstrap() {
         return new ConsumerBootstrap();
-    }
-    @Bean
-    @Order(Integer.MIN_VALUE)
-    public ApplicationRunner createConsumerApplicationRunner(ConsumerBootstrap consumerBootstrap) {
-        return x -> {
-            consumerBootstrap.start();
-        };
     }
 
     @Bean
@@ -42,10 +32,5 @@ public class ConsumerConfig {
     @Bean
     public Router router() {
         return Router.Default;
-    }
-
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public RegisterCenter registerCenter() {
-        return new RegisterCenter.StaticRegisterCenter(List.of(providers.split(",")));
     }
 }

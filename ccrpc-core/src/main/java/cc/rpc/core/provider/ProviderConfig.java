@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ProviderConfig {
 
-    @Bean
+    @Bean(destroyMethod = "stop")
     public ProviderBootstrap createProviderBootstrap() {
         return new ProviderBootstrap();
     }
