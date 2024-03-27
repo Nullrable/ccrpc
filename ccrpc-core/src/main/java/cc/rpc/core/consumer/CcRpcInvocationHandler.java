@@ -12,11 +12,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.ResponseBody;
 
 /**
  * @author nhsoft.lsd
  */
+@Slf4j
 public class CcRpcInvocationHandler implements InvocationHandler {
 
     private Class<?> service;
@@ -36,7 +38,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
-        System.out.println(" ===> request " + JSON.toJSONString(args));
+        log.info(" ===> request: " + JSON.toJSONString(args));
 
         RpcRequest request = new RpcRequest();
         request.setService(service.getName());
@@ -53,7 +55,10 @@ public class CcRpcInvocationHandler implements InvocationHandler {
             throw new RuntimeException("okhttp response body is null");
         }
 
-        RpcResponse rpcResponse = JSON.parseObject(responseBody.string(), RpcResponse.class);
+        String result = responseBody.string();
+        log.info(" ===> result: " + result);
+
+        RpcResponse rpcResponse = JSON.parseObject(result, RpcResponse.class);
 
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();

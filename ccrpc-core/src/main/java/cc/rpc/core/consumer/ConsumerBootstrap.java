@@ -16,6 +16,7 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import org.springframework.context.ApplicationContextAware;
 /**
  * @author nhsoft.lsd
  */
+@Slf4j
 public class ConsumerBootstrap implements ApplicationContextAware {
 
     private Map<String, Object> stub = new HashMap<>();
@@ -49,13 +51,13 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
     @PreDestroy
     public void stop() {
-        System.out.println("ConsumerBootstrap stopping");
+        log.info("consumer bootstrap stopped");
         rc.stop();
     }
 
     public void start() {
 
-        System.out.println("ConsumerBootstrap starting");
+        log.info("consumer bootstrap starting");
 
         LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
         Router router = applicationContext.getBean(Router.class);

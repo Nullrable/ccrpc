@@ -4,6 +4,7 @@ import cc.rpc.core.meta.InstanceMeta;
 import cc.rpc.core.meta.ServiceMeta;
 import cc.rpc.core.registry.ChangedListener;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author nhsoft.lsd
@@ -22,6 +23,7 @@ public interface RegisterCenter {
 
     void subscribe(ServiceMeta service, ChangedListener listener);
 
+    @Slf4j
     class StaticRegisterCenter implements RegisterCenter {
 
         private List<String> providers;
@@ -32,13 +34,13 @@ public interface RegisterCenter {
 
         @Override
         public void start() {
-            System.out.println("register center start");
+            log.info("static register center start");
 
         }
 
         @Override
         public void stop() {
-            System.out.println("register center stop");
+            log.info("register center stop");
         }
 
         @Override

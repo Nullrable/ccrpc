@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author nhsoft.lsd
  */
+@Slf4j
 public class TypeUtil {
 
     public static Object cast(Class<?> origin, Object arg) {
@@ -84,7 +86,6 @@ public class TypeUtil {
                         Type actureType = parameterizedType.getActualTypeArguments()[0];
 
                         if (actureType instanceof Class<?>) {
-                            System.out.println("=======> list type  : " + actureType);
                             List<Object> returnList = new ArrayList<>();
                             parameterList.forEach(x -> {
                                 returnList.add(TypeUtil.cast((Class<?>)actureType, x));
@@ -98,8 +99,6 @@ public class TypeUtil {
 
                                     Class<?> keyType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[0];
                                     Class<?> valueType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[1];
-                                    System.out.println("=======> map keyType  : " + keyType);
-                                    System.out.println("=======> map valueType: " + valueType);
 
                                     itemMap.entrySet().forEach(x -> {
                                         Object key = TypeUtil.cast(keyType, x.getKey());
@@ -108,15 +107,15 @@ public class TypeUtil {
                                     });
                                     returnList.add(resultMap);
                                 } else {
-                                    System.out.println("not match " + s);
+                                    log.info("not match " + s);
                                 }
                             });
                             result[i] = returnList;
                         } else {
-                            System.out.println("=======>未找到泛型1" + actureType);
+                            log.info("=======>未找到泛型1" + actureType);
                         }
                     } else {
-                        System.out.println("=======>未找到泛型2" + parameterClass);
+                        log.info("=======>未找到泛型2" + parameterClass);
                     }
                 } else if (parameter instanceof Map<?, ?> parameterMap) {
 
@@ -125,8 +124,6 @@ public class TypeUtil {
 
                         Class<?> keyType = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                         Class<?> valueType = (Class<?>)parameterizedType.getActualTypeArguments()[1];
-                        System.out.println("=======> map keyType  : " + keyType);
-                        System.out.println("=======> map valueType: " + valueType);
 
                         Map resultMap = new HashMap();
                         parameterMap.entrySet().forEach(x -> {
@@ -155,8 +152,6 @@ public class TypeUtil {
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Class<?> keyType = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                     Class<?> valueType = (Class<?>)parameterizedType.getActualTypeArguments()[1];
-                    System.out.println("keyType  : " + keyType);
-                    System.out.println("valueType: " + valueType);
                     jsonObject.entrySet().stream().forEach(
                             e -> {
                                 Object key = TypeUtil.cast(keyType, e.getKey());
@@ -182,7 +177,6 @@ public class TypeUtil {
                     Type[] typeArguments = parameterizedType.getActualTypeArguments();
 
                     Type actureType = typeArguments[0];
-                    System.out.println("=======> actureType: " + actureType);
                     if (actureType instanceof Class<?>) {
                         Class<?> genericClass = (Class<?>) actureType;
                         // genericClass即为范型类的类型参数
@@ -195,8 +189,6 @@ public class TypeUtil {
 
                                 Class<?> keyType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[0];
                                 Class<?> valueType = (Class<?>)parameterizedTypeInner.getActualTypeArguments()[1];
-                                System.out.println("=======> map keyType  : " + keyType);
-                                System.out.println("=======> map valueType: " + valueType);
 
                                 itemMap.entrySet().forEach(x -> {
                                     Object key = TypeUtil.cast(keyType, x.getKey());
@@ -205,7 +197,7 @@ public class TypeUtil {
                                 });
                                 returnList.add(resultMap);
                             } else {
-                                System.out.println("not match " + s);
+                                log.info("not match " + s);
                             }
                         });
                         return returnList;

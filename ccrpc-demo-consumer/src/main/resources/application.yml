@@ -8,6 +8,10 @@ ccrpc:
   zkserver: 127.0.0.1:2181
 
 app:
-  id: ccrpc-demo
-  namespace: local
-  env: local
+  id: app1
+  namespace: public
+  env: dev
+
+logging:
+  level:
+    root: info

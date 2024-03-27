@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,7 @@ import org.springframework.util.TypeUtils;
  * @author nhsoft.lsd
  */
 @Data
+@Slf4j
 public class ProviderBootstrap implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
@@ -68,9 +70,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     @PostConstruct
     public void init() {
-        System.out.println("ProviderBootstrap init");
+        log.info("provider bootstrap init");
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CcProvider.class);
-        providers.keySet().forEach(System.out::println);
+        providers.keySet().forEach(log::info);
         providers.values().forEach(this::genInterface);
 
         registerCenter = applicationContext.getBean(RegisterCenter.class);
@@ -79,6 +81,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     public void start() {
+        log.info("provider bootstrap starting");
         instance = createInstance();
         registerCenter.start();
         skeleton.keySet().forEach(this::registerService);
@@ -91,6 +94,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     @PreDestroy
     public void stop() {
+        log.info("provider bootstrap stopping");
         //取消注册服务
         skeleton.keySet().forEach(this::unregisterService);
         registerCenter.stop();
@@ -122,7 +126,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         meta.setMethod(method);
         meta.setMethodSign(MethodUtil.methodSign(method));
 
-        System.out.println("注册的方法：" + meta);
+        log.info("注册的方法：" + meta);
 
         return meta;
     }

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @CcProvider
 @Component
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     @Override
@@ -95,20 +97,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> saveList(final List<User> userList, int id) {
-        userList.forEach(user -> System.out.println(user.getName()+ "_FromConsumer"));
+        userList.forEach(user -> log.info(user.getName()+ "_FromConsumer"));
 
         return userList;
     }
 
     @Override
     public Map<String, User> saveMap(final Map<String, User> map) {
-        map.values().forEach(user -> System.out.println("saveMap====>" + user.getName()+ "_FromConsumer"));
+        map.values().forEach(user ->log.info("saveMap====>" + user.getName()+ "_FromConsumer"));
         return map;
     }
 
     @Override
     public List<Map<String, User>> saveMapList(final List<Map<String, User>> mapList) {
-        mapList.forEach(map ->  map.values().forEach(user -> System.out.println("saveMapList====>" + user.getName()+ "_FromConsumer")));
+        mapList.forEach(map ->  map.values().forEach(user ->log.info("saveMapList====>" + user.getName()+ "_FromConsumer")));
         return mapList;
     }
 }
