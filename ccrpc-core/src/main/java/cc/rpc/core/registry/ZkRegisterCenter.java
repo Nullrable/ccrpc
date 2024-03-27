@@ -99,7 +99,9 @@ public class ZkRegisterCenter implements RegisterCenter {
     @SneakyThrows
     public void subscribe(final ServiceMeta service, final ChangedListener listener) {
 
-        final TreeCache cache = TreeCache.newBuilder(client, "/"+service)
+        System.out.println("subscribe");
+
+        final TreeCache cache = TreeCache.newBuilder(client, "/"+ service.toPath())
                 .setCacheData(true).setMaxDepth(2).build();
         cache.getListenable().addListener(
                 (curator, event) -> {

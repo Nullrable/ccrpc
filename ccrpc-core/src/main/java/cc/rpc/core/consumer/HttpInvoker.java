@@ -26,11 +26,8 @@ public class HttpInvoker {
     }
 
     public static ResponseBody post(final String url, final String json) {
-        //TODO nhsoft.lsd 通行方式，序列化
         RequestBody body = RequestBody.create(JSON, json);
-
         Request request = new Request.Builder().url(url).post(body).build();
-
         try {
             return okHttpClient.newCall(request).execute().body();
         } catch (IOException e) {

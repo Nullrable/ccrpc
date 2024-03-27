@@ -58,18 +58,25 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @Value("${app.env}")
     private String env;
 
+    @Value("${server.port}")
+    private int port;
 
-    public void start() {
+    @PostConstruct
+    public void init() {
         System.out.println("ProviderBootstrap init");
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CcProvider.class);
-        registerCenter = applicationContext.getBean(RegisterCenter.class);
         providers.keySet().forEach(System.out::println);
         providers.values().forEach(this::genInterface);
+
+        registerCenter = applicationContext.getBean(RegisterCenter.class);
+    }
+
+
+    public void start() {
 
         System.out.println("ProviderBootstrap start");
 
         registerCenter.start();
-
 
         instance = createInstance();
 
@@ -80,19 +87,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     }
 
-    private InstanceMeta createInstance() {
-        //注册服务
-        String ip = null;
-        try {
-            ip = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-        String port = System.getProperty("server.port");
-
-        return new InstanceMeta("http", ip, Integer.parseInt(port), null);
-    }
-
+    @PreDestroy
     public void stop() {
         System.out.println("ProviderBootstrap stop");
         //取消注册服务
@@ -161,4 +156,17 @@ public class ProviderBootstrap implements ApplicationContextAware {
             return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
         }
     }
+
+    private InstanceMeta createInstance() {
+        //注册服务
+        String ip = null;
+        try {
+            ip = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new InstanceMeta("http", ip, port, null);
+    }
+
 }

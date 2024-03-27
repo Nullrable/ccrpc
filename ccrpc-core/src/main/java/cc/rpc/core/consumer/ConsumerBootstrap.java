@@ -10,6 +10,7 @@ import cc.rpc.core.meta.ServiceMeta;
 import cc.rpc.core.registry.ChangedListener;
 import cc.rpc.core.registry.Event;
 import cc.rpc.core.util.MethodUtil;
+import jakarta.annotation.PreDestroy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
@@ -30,6 +31,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
+    private RegisterCenter rc;
+
     @Value("${app.id}")
     private String app;
 
@@ -44,17 +47,26 @@ public class ConsumerBootstrap implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
+    @PreDestroy
+    public void stop() {
+        System.out.println("ConsumerBootstrap stopping");
+        rc.stop();
+    }
+
     public void start() {
-        String[] beanNames = applicationContext.getBeanDefinitionNames();
+
+        System.out.println("ConsumerBootstrap starting");
 
         LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
         Router router = applicationContext.getBean(Router.class);
-        RegisterCenter rc = applicationContext.getBean(RegisterCenter.class);
+        rc = applicationContext.getBean(RegisterCenter.class);
+        rc.start();
 
         RpcContext context = new RpcContext();
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
 
+        String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {
 
             Object bean = applicationContext.getBean(beanName);
