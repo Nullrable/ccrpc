@@ -3,6 +3,7 @@ package cc.rpc.demo.provider;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
 import cc.rpc.core.provider.ProviderBootstrap;
+import cc.rpc.core.provider.ProviderInvoker;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,12 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProviderController {
 
     @Resource
-    private ProviderBootstrap providerBootstrap;
+    private ProviderInvoker providerInvoker;
+
 
     @PostMapping("/")
     public RpcResponse invoke(@RequestBody RpcRequest request) {
 
-        return providerBootstrap.invoke(request);
+        return providerInvoker.invoke(request);
 
     }
 }

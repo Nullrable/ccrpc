@@ -82,17 +82,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                 Object proxy = stub.get(serviceName);
 
                 if (proxy == null) {
-                    ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(serviceName).build();
-                    List<InstanceMeta> providers = rc.fetchAll(serviceMeta);
-                    proxy = createConsumer(service, context, providers);
+                    proxy = createConsumerFromRegister(service, context, rc);
                     stub.put(serviceName, proxy);
-                    rc.subscribe(serviceMeta, new ChangedListener() {
-                        @Override
-                        public void fire(final Event event) {
-                            providers.clear();
-                            providers.addAll(event.getData());
-                        }
-                    });
                 }
                 try {
                     field.setAccessible(true);
@@ -102,6 +93,17 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                 }
             });
         }
+    }
+
+    private Object createConsumerFromRegister(Class<?> service, RpcContext context, RegisterCenter rc) {
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service.getCanonicalName()).build();
+        List<InstanceMeta> providers = rc.fetchAll(serviceMeta);
+        Object proxy = createConsumer(service, context, providers);
+        rc.subscribe(serviceMeta, event -> {
+            providers.clear();
+            providers.addAll(event.getData());
+        });
+        return proxy;
     }
 
     private Object createConsumer(Class<?> service, RpcContext context, List<InstanceMeta> providers) {

@@ -61,6 +61,11 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @Value("${server.port}")
     private int port;
 
+    @Override
+    public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
     @PostConstruct
     public void init() {
         System.out.println("ProviderBootstrap init");
@@ -69,38 +74,31 @@ public class ProviderBootstrap implements ApplicationContextAware {
         providers.values().forEach(this::genInterface);
 
         registerCenter = applicationContext.getBean(RegisterCenter.class);
+
+
     }
 
-
     public void start() {
-
-        System.out.println("ProviderBootstrap start");
-
-        registerCenter.start();
-
         instance = createInstance();
+        registerCenter.start();
+        skeleton.keySet().forEach(this::registerService);
+    }
 
-        skeleton.keySet().forEach(service -> {
-            ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
-            registerCenter.register(serviceMeta, instance);
-        });
-
+    private void registerService(String service) {
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
+        registerCenter.register(serviceMeta, instance);
     }
 
     @PreDestroy
     public void stop() {
-        System.out.println("ProviderBootstrap stop");
         //取消注册服务
-        skeleton.keySet().forEach(service -> {
-            ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
-            registerCenter.unregister(serviceMeta, instance);
-        });
+        skeleton.keySet().forEach(this::unregisterService);
         registerCenter.stop();
     }
 
-    @Override
-    public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+    private void unregisterService(String service) {
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
+        registerCenter.unregister(serviceMeta, instance);
     }
 
     private void genInterface(final Object service) {
@@ -129,44 +127,10 @@ public class ProviderBootstrap implements ApplicationContextAware {
         return meta;
     }
 
-
-    public RpcResponse invoke(final RpcRequest request) {
-        List<ProviderMeta> providerMetas = skeleton.get(request.getService());
-        try {
-
-            ProviderMeta providerMeta = providerMetas.stream().filter(meta -> request.getMethodSign().equals(meta.getMethodSign())).findFirst().orElse(null);
-
-            if (providerMeta == null) {
-                return new RpcResponse(false, "method not found", null);
-            }
-
-            Method method = providerMeta.getMethod();
-            Object bean = providerMeta.getService();
-
-            //request.getArgs() 类型匹配
-            Object result = method.invoke(bean, TypeUtil.requestCast(request.getArgs(), method));
-
-            return new RpcResponse(true, result, null);
-
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-            return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
-        }
-    }
-
+    @SneakyThrows
     private InstanceMeta createInstance() {
         //注册服务
-        String ip = null;
-        try {
-            ip = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-
-        return new InstanceMeta("http", ip, port, null);
+        String ip = InetAddress.getLocalHost().getHostAddress();
+        return InstanceMeta.http(ip, port);
     }
-
 }

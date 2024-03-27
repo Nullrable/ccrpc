@@ -1,8 +1,10 @@
 package cc.rpc.demo.provider;
 
 import cc.rpc.core.api.RegisterCenter;
+import cc.rpc.core.consumer.HttpInvoker;
 import cc.rpc.core.provider.ProviderBootstrap;
-import cc.rpc.core.registry.ZkRegisterCenter;
+import cc.rpc.core.provider.ProviderInvoker;
+import cc.rpc.core.registry.zk.ZkRegisterCenter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +29,11 @@ public class ProviderConfig {
     @Bean
     public RegisterCenter proivderZkRegisterCenter() {
         return new ZkRegisterCenter(zkserver);
+    }
+
+    @Bean
+    public ProviderInvoker providerInvoker(ProviderBootstrap providerBootstrap) {
+        return new ProviderInvoker(providerBootstrap);
     }
 
     @Bean
