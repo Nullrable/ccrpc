@@ -1,11 +1,13 @@
 package cc.rpc.core.api;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * @author nhsoft.lsd
  */
 @Data
+@ToString
 public class RpcRequest {
 
     /**

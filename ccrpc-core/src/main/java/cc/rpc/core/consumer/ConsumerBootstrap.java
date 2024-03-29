@@ -1,6 +1,7 @@
 package cc.rpc.core.consumer;
 
 import cc.rpc.core.annotation.CcConsumer;
+import cc.rpc.core.api.Filter;
 import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.Router;
@@ -11,11 +12,13 @@ import cc.rpc.core.registry.ChangedListener;
 import cc.rpc.core.registry.Event;
 import cc.rpc.core.util.MethodUtil;
 import jakarta.annotation.PreDestroy;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
@@ -61,12 +64,16 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
         LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
         Router router = applicationContext.getBean(Router.class);
+        Map<String, Filter> filterMap = applicationContext.getBeansOfType(Filter.class);
+        List<Filter> filters = filterMap.values().stream().sorted().collect(Collectors.toList());
+
         rc = applicationContext.getBean(RegisterCenter.class);
         rc.start();
 
         RpcContext context = new RpcContext();
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
+        context.setFilters(filters);
 
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {

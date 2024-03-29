@@ -9,13 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * @author nhsoft.lsd
  */
 @CcProvider
-@Component
 @Slf4j
 public class UserServiceImpl implements UserService {
 

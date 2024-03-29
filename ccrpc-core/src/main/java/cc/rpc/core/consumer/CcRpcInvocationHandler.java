@@ -1,5 +1,6 @@
 package cc.rpc.core.consumer;
 
+import cc.rpc.core.api.Filter;
 import cc.rpc.core.api.RpcContext;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
@@ -45,6 +46,16 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         request.setMethodSign(MethodUtil.methodSign(method));
         request.setArgs(args);
 
+        List<Filter> filters = context.getFilters();
+        if (filters != null && !filters.isEmpty()) {
+            for (Filter filter : filters) {
+                Object result = filter.preFilter(request);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
         List<String> urls = providers.stream().map(InstanceMeta::toUrl).collect(Collectors.toList());
 
         List<String> providers = context.getRouter().route(urls);
@@ -55,14 +66,24 @@ public class CcRpcInvocationHandler implements InvocationHandler {
             throw new RuntimeException("okhttp response body is null");
         }
 
-        String result = responseBody.string();
-        log.info(" ===> result: " + result);
+        String resultJson = responseBody.string();
+        log.info(" ===> result: " + resultJson);
 
-        RpcResponse rpcResponse = JSON.parseObject(result, RpcResponse.class);
+        RpcResponse rpcResponse = JSON.parseObject(resultJson, RpcResponse.class);
 
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
-            return TypeUtil.resultCast(data, method);
+            Object result = TypeUtil.resultCast(data, method);
+
+            if (filters != null && !filters.isEmpty()) {
+                for (Filter filter : filters) {
+                     Object resultAfterFilter = filter.postFilter(request, result);
+                     if (resultAfterFilter != null) {
+                         return resultAfterFilter;
+                     }
+                }
+            }
+            return result;
         } else {
             Exception ex = rpcResponse.getEx();
             throw new RuntimeException(ex);

@@ -1,11 +1,13 @@
 package cc.rpc.demo.consumer;
 
 import cc.rpc.core.annotation.CcConsumer;
+import cc.rpc.core.api.Filter;
 import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.Router;
 import cc.rpc.core.cluster.RoundRibbonLoadBalancer;
 import cc.rpc.core.consumer.ConsumerBootstrap;
+import cc.rpc.core.filter.CacheFilter;
 import cc.rpc.core.registry.zk.ZkRegisterCenter;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
@@ -57,6 +59,11 @@ public class ConsumerConfig {
             consumerBootstrap.start();
             testCase();
         };
+    }
+
+    @Bean
+    public Filter filter() {
+        return new CacheFilter();
     }
 
     @CcConsumer
