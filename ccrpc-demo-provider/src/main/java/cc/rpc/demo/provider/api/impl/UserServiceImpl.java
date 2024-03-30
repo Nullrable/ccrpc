@@ -3,12 +3,14 @@ package cc.rpc.demo.provider.api.impl;
 import cc.rpc.core.annotation.CcProvider;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 
 /**
  * @author nhsoft.lsd
@@ -19,7 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String findId(final Integer id) {
-        return System.getProperty("server.port");
+        return environment.getProperty("server.port");
     }
 
     @Override
@@ -27,13 +29,16 @@ public class UserServiceImpl implements UserService {
         return id + "_" + name;
     }
 
+    @Resource
+    private Environment environment;
+
     @Override
     public List<User> listAll() {
         List<User> users = new ArrayList<>();
-        User user = new User(1, "LSD" + System.getProperty("server.port"));
+        User user = new User(1, "LSD" + environment.getProperty("server.port"));
         users.add(user);
 
-        User user2 = new User(2, "LSD2"+ System.getProperty("server.port"));
+        User user2 = new User(2, "LSD2"+ environment.getProperty("server.port"));
         users.add(user2);
         return users;
     }
@@ -42,7 +47,7 @@ public class UserServiceImpl implements UserService {
     public List<User> findById(final List<Integer> ids) {
         List<User> users = new ArrayList<>();
         ids.forEach(id -> {
-            users.add(new User(id, id + "_LSD"+ System.getProperty("server.port")));
+            users.add(new User(id, id + "_LSD"+ environment.getProperty("server.port")));
         });
         return users;
     }
@@ -56,14 +61,14 @@ public class UserServiceImpl implements UserService {
     public List<User> findByArray(final Integer[] ids) {
         List<User> users = new ArrayList<>();
         Arrays.stream(ids).forEach(id -> {
-            users.add(new User(id, id + "_LSD"+ System.getProperty("server.port")));
+            users.add(new User(id, id + "_LSD"+ environment.getProperty("server.port")));
         });
         return users;
     }
 
     @Override
     public User read(final Integer id) {
-        return new User(id, id + "_LSD" + System.getProperty("server.port"));
+        return new User(id, id + "_LSD" + environment.getProperty("server.port"));
     }
 
     @Override
@@ -90,7 +95,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User[] arrayUser() {
-        return new User[]{new User(1, "LSD Array" + System.getProperty("server.port"))};
+        return new User[]{new User(1, "LSD Array" + environment.getProperty("server.port"))};
     }
 
     @Override

@@ -1,13 +1,14 @@
 package cc.rpc.demo.provider;
 
-import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
+@AutoConfigureMockMvc
+@SpringBootTest(classes = CcRpcDemoProviderApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles(value = "test")
 class CcrpcDemoProviderApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
+
 
 }
