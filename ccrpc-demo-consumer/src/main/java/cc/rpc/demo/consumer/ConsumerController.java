@@ -1,6 +1,7 @@
 package cc.rpc.demo.consumer;
 
 import cc.rpc.core.annotation.CcConsumer;
+import cc.rpc.core.api.CcRpcException;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
 import java.util.ArrayList;
@@ -29,5 +30,15 @@ public class ConsumerController {
     @GetMapping("/findId")
     public String findId(@RequestParam("id") Integer id) {
         return userService.findId(id);
+    }
+
+    @GetMapping("/timeout")
+    public String timout() {
+        try {
+            User user = userService.timeout(5000);
+            return user.toString();
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
 }

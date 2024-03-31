@@ -1,6 +1,7 @@
 package cc.rpc.core.consumer;
 
 import cc.rpc.core.annotation.CcConsumer;
+import cc.rpc.core.api.CcRpcException;
 import cc.rpc.core.api.Filter;
 import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.RegisterCenter;
@@ -47,6 +48,15 @@ public class ConsumerBootstrap implements ApplicationContextAware {
     @Value("${app.env}")
     private String env;
 
+    @Value("${app.retries}")
+    private String retires;
+
+    @Value("${app.read-timeout}")
+    private String readTimout;
+
+    @Value("${app.connect-timeout}")
+    private String connectTimout;
+
     @Override
     public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -74,6 +84,10 @@ public class ConsumerBootstrap implements ApplicationContextAware {
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
         context.setFilters(filters);
+        context.getParameters().put("app.retries", retires);
+        context.getParameters().put("app.read-timout", readTimout);
+        context.getParameters().put("app.connect-timout", connectTimout);
+        log.info(" =========> rpc context: " + context);
 
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {
@@ -98,7 +112,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                     field.setAccessible(true);
                     field.set(bean, proxy);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
+                    throw new CcRpcException(CcRpcException.ILLEGAL_ACCESS_EX, e);
                 }
             });
         }

@@ -1,6 +1,7 @@
 package cc.rpc.core.consumer;
 
 import cc.rpc.core.api.RpcRequest;
+import java.io.IOException;
 import okhttp3.ResponseBody;
 
 /**
@@ -8,5 +9,5 @@ import okhttp3.ResponseBody;
  */
 public interface HttpInvoker {
 
-    ResponseBody post(final String url, final RpcRequest request);
+    ResponseBody post(final String url, final RpcRequest request) throws IOException;
 }

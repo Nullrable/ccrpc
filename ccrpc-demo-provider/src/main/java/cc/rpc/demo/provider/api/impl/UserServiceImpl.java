@@ -1,6 +1,7 @@
 package cc.rpc.demo.provider.api.impl;
 
 import cc.rpc.core.annotation.CcProvider;
+import cc.rpc.core.api.CcRpcException;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
 import jakarta.annotation.Resource;
@@ -115,5 +116,20 @@ public class UserServiceImpl implements UserService {
     public List<Map<String, User>> saveMapList(final List<Map<String, User>> mapList) {
         mapList.forEach(map ->  map.values().forEach(user ->log.info("saveMapList====>" + user.getName()+ "_FromConsumer")));
         return mapList;
+    }
+
+    @Override
+    public User timeout(int timout) {
+
+        String port = environment.getProperty("server.port");
+
+        if (port.equals("9002")) {
+            try {
+                Thread.sleep(timout);
+            } catch (InterruptedException e) {
+                throw new CcRpcException(e);
+            }
+        }
+        return new User(1, 1 + "_timeout_" + port);
     }
 }

@@ -1,5 +1,6 @@
 package cc.rpc.core.provider;
 
+import cc.rpc.core.api.CcRpcException;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
 import cc.rpc.core.meta.ProviderMeta;
@@ -7,11 +8,13 @@ import cc.rpc.core.util.TypeUtil;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.MultiValueMap;
 
 /**
  * @author nhsoft.lsd
  */
+@Slf4j
 public class ProviderInvoker {
 
     private MultiValueMap<String, ProviderMeta> skeleton;
@@ -20,7 +23,7 @@ public class ProviderInvoker {
         this.skeleton = providerBootstrap.getSkeleton();
     }
 
-    public RpcResponse invoke(final RpcRequest request) {
+    public RpcResponse<?> invoke(final RpcRequest request) {
 
         List<ProviderMeta> providerMetas = skeleton.get(request.getService());
         try {
@@ -28,7 +31,7 @@ public class ProviderInvoker {
             ProviderMeta providerMeta = providerMetas.stream().filter(meta -> request.getMethodSign().equals(meta.getMethodSign())).findFirst().orElse(null);
 
             if (providerMeta == null) {
-                return new RpcResponse(false, "method not found", null);
+                return new RpcResponse<>(false, "method not found", null);
             }
 
             Method method = providerMeta.getMethod();
@@ -37,14 +40,14 @@ public class ProviderInvoker {
             //request.getArgs() 类型匹配
             Object result = method.invoke(bean, TypeUtil.requestCast(request.getArgs(), method));
 
-            return new RpcResponse(true, result, null);
+            return new RpcResponse<>(true, result, null);
 
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-            return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            return new RpcResponse(false, null, new RuntimeException(e.getMessage()));
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            log.info(e.getMessage(), e);
+            return new RpcResponse<>(false, null, new CcRpcException(e.getMessage()));
+        } catch (Exception e) {
+            log.info(e.getMessage(), e);
+            return new RpcResponse<>(false, null, new CcRpcException(CcRpcException.UNKNOWN));
         }
     }
 }

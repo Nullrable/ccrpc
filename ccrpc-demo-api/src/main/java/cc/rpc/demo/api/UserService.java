@@ -38,4 +38,6 @@ public interface UserService {
 
     List<Map<String, User>> saveMapList(List<Map<String, User>> mapList);
 
+    User timeout(int timeout);
+
 }
