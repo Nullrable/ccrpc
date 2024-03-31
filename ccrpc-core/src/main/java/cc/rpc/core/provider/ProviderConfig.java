@@ -1,4 +1,4 @@
-package cc.rpc.demo.provider;
+package cc.rpc.core.provider;
 
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.consumer.HttpInvoker;
