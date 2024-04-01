@@ -35,7 +35,7 @@ public class ConsumerController {
     @GetMapping("/timeout")
     public String timout() {
         try {
-            User user = userService.timeout(5000);
+            User user = userService.timeout(1000);
             return user.toString();
         } catch (Exception e) {
             return e.getMessage();

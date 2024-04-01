@@ -101,7 +101,7 @@ public class CcRpcDemoConsumerApplication {
 //        mapList = userService.saveMapList(mapList);
 //        log.info("==============> test14: " + mapList.toString());
 
-        User user =  userService.timeout(6000);
+        User user =  userService.timeout(1000);
         log.info("==============> test15: " + user.toString());
 
         //TODO nhsoft.lsd 增加异常test

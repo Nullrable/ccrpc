@@ -2,6 +2,7 @@ package cc.rpc.core.meta;
 
 import java.util.Map;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author nhsoft.lsd
@@ -17,7 +18,7 @@ public class InstanceMeta {
 
     private String context;
 
-    private boolean status; // online or offline
+    private boolean status = true; // online or offline
     private Map<String, String> parameters;  // idc  A B C
 
     public InstanceMeta(String scheme, String host, Integer port, String context) {

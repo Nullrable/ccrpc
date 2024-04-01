@@ -40,4 +40,6 @@ public interface UserService {
 
     User timeout(int timeout);
 
+    void setPort(String port);
+
 }

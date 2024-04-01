@@ -1,5 +1,6 @@
 package cc.rpc.core.api;
 
+import cc.rpc.core.meta.InstanceMeta;
 import java.util.List;
 
 /**
@@ -7,7 +8,7 @@ import java.util.List;
  */
 public interface Router {
 
-    List<String> route(List<String> providers);
+    List<InstanceMeta> route(List<InstanceMeta> providers);
 
     Router Default = providers -> providers;
 

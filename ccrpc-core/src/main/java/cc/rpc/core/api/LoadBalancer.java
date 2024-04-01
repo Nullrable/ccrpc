@@ -1,5 +1,6 @@
 package cc.rpc.core.api;
 
+import cc.rpc.core.meta.InstanceMeta;
 import java.util.List;
 
 /**
@@ -7,7 +8,7 @@ import java.util.List;
  */
 public interface LoadBalancer {
 
-    String choose(List<String> providers);
+    InstanceMeta choose(List<InstanceMeta> providers);
 
     LoadBalancer Default = providers -> {
         if (providers == null || providers.isEmpty()) {

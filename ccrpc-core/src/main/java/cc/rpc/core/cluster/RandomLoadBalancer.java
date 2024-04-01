@@ -1,6 +1,7 @@
 package cc.rpc.core.cluster;
 
 import cc.rpc.core.api.LoadBalancer;
+import cc.rpc.core.meta.InstanceMeta;
 import java.util.List;
 import java.util.Random;
 
@@ -12,7 +13,7 @@ public class RandomLoadBalancer implements LoadBalancer {
     Random random = new Random();
 
     @Override
-    public String choose(final List<String> providers) {
+    public InstanceMeta choose(final List<InstanceMeta> providers) {
         if (providers == null || providers.isEmpty()) {
             return null;
         }

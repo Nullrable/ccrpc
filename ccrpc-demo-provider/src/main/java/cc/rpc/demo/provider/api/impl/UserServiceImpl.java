@@ -118,12 +118,14 @@ public class UserServiceImpl implements UserService {
         return mapList;
     }
 
+    String ports = "9002";
     @Override
     public User timeout(int timout) {
 
         String port = environment.getProperty("server.port");
 
-        if (port.equals("9002")) {
+        assert port != null;
+        if (port.equals(ports)) {
             try {
                 Thread.sleep(timout);
             } catch (InterruptedException e) {
@@ -131,5 +133,14 @@ public class UserServiceImpl implements UserService {
             }
         }
         return new User(1, 1 + "_timeout_" + port);
+    }
+
+    @Override
+    public void setPort(final String port) {
+        setPorts(port);
+    }
+
+    public void setPorts(final String ports) {
+        this.ports = ports;
     }
 }
