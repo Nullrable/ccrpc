@@ -7,6 +7,8 @@ import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.Router;
 import cc.rpc.core.api.RpcContext;
+import cc.rpc.core.config.AppProperties;
+import cc.rpc.core.config.ConsumerProperties;
 import cc.rpc.core.meta.InstanceMeta;
 import cc.rpc.core.meta.ServiceMeta;
 import cc.rpc.core.registry.ChangedListener;
@@ -39,23 +41,14 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
     private RegisterCenter rc;
 
-    @Value("${app.id}")
-    private String app;
+    private AppProperties appProperties;
 
-    @Value("${app.namespace}")
-    private String namespace;
+    private ConsumerProperties consumerProperties;
 
-    @Value("${app.env}")
-    private String env;
-
-    @Value("${app.retries}")
-    private String retires;
-
-    @Value("${app.read-timeout}")
-    private String readTimout;
-
-    @Value("${app.connect-timeout}")
-    private String connectTimout;
+    public ConsumerBootstrap(final AppProperties appProperties, final ConsumerProperties consumerProperties) {
+        this.appProperties = appProperties;
+        this.consumerProperties = consumerProperties;
+    }
 
     @Override
     public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
@@ -84,9 +77,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
         context.setFilters(filters);
-        context.getParameters().put("app.retries", retires);
-        context.getParameters().put("app.read-timout", readTimout);
-        context.getParameters().put("app.connect-timout", connectTimout);
+        context.setConsumerProperties(consumerProperties);
         log.info(" =========> rpc context: " + context);
 
         String[] beanNames = applicationContext.getBeanDefinitionNames();
@@ -96,7 +87,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
             Class clazz = bean.getClass();
 
-            List<Field> fields =  MethodUtil.findAnnotatedField(clazz, CcConsumer.class);
+            List<Field> fields = MethodUtil.findAnnotatedField(clazz, CcConsumer.class);
 
             fields.forEach(field -> {
                 Class<?> service = field.getType();
@@ -120,7 +111,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
     }
 
     private Object createConsumerFromRegister(Class<?> service, RpcContext context, RegisterCenter rc) {
-        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service.getCanonicalName()).build();
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(appProperties.getId()).namespace(appProperties.getNamespace()).env(appProperties.getEnv()).service(service.getCanonicalName()).build();
         List<InstanceMeta> providers = rc.fetchAll(serviceMeta);
         Object proxy = createConsumer(service, context, providers);
         rc.subscribe(serviceMeta, event -> {

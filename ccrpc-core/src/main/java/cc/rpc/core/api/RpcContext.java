@@ -1,5 +1,6 @@
 package cc.rpc.core.api;
 
+import cc.rpc.core.config.ConsumerProperties;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,5 +20,5 @@ public class RpcContext {
 
    private List<Filter> filters;
 
-   private Map<String, String> parameters = new HashMap<>();
+   private ConsumerProperties consumerProperties;
 }

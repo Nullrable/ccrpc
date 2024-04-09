@@ -2,12 +2,20 @@ server:
   port: 9000
 
 ccrpc:
-  zkserver: 127.0.0.1:2181
+  zk:
+    server: 127.0.0.1:2181
+    root: ccrpc2
+  app:
+    id: app1
+    namespace: public
+    env: dev
+  provider:
+    metas:
+      dc: bj
+      gray: false
+      unit: B001
+      tc: 300
 
-app:
-  id: app1
-  namespace: public
-  env: dev
 
 logging:
   level:

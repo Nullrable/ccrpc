@@ -1,12 +1,16 @@
 package cc.rpc.core.registry.zk;
 
 import cc.rpc.core.api.RegisterCenter;
+import cc.rpc.core.config.ZkProperties;
 import cc.rpc.core.meta.InstanceMeta;
 import cc.rpc.core.meta.ServiceMeta;
 import cc.rpc.core.registry.ChangedListener;
 import cc.rpc.core.registry.Event;
+import com.alibaba.fastjson.JSON;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
@@ -14,6 +18,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author nhsoft.lsd
@@ -21,28 +26,32 @@ import org.apache.zookeeper.CreateMode;
 @Slf4j
 public class ZkRegisterCenter implements RegisterCenter {
 
+    private ZkProperties zkProperties;
+
     private CuratorFramework client;
 
-    public ZkRegisterCenter(final String zkServer) {
-        client = CuratorFrameworkFactory.
-                builder().connectString(zkServer).retryPolicy(new
-                        ExponentialBackoffRetry(1000,3)).
-                namespace("ccrpc").build();
-    }
+    public ZkRegisterCenter(ZkProperties zkProperties) {
 
+        this.zkProperties = zkProperties;
+
+        client = CuratorFrameworkFactory.
+                builder().connectString(zkProperties.getServer()).retryPolicy(new
+                        ExponentialBackoffRetry(1000,3)).
+                namespace(zkProperties.getRoot()).build();
+    }
 
     @Override
     public void start() {
-        log.info("zookeeper register starting");
+        log.info("zookeeper register starting, server: {}, namespace: {}", zkProperties.getServer(), zkProperties.getRoot());
         client.start();
-        log.info("zookeeper register started");
+        log.info("zookeeper register started, server: {}, namespace: {}", zkProperties.getServer(), zkProperties.getRoot());
     }
 
     @Override
     public void stop() {
-        log.info("zookeeper register stopping");
+        log.info("zookeeper register stopping, server: {}, namespace: {}", zkProperties.getServer(), zkProperties.getRoot());
         client.close();
-        log.info("zookeeper register stopped");
+        log.info("zookeeper register stopped, server: {}, namespace: {}", zkProperties.getServer(), zkProperties.getRoot());
     }
 
     @Override
@@ -56,7 +65,12 @@ public class ZkRegisterCenter implements RegisterCenter {
         }
 
         String providerPath = servicePath + "/" + instanceMeta.toPath();
-        client.create().withMode(CreateMode.EPHEMERAL).forPath(providerPath, "provider".getBytes());
+
+        if (client.checkExists().forPath(providerPath) != null) {
+            client.delete().quietly().forPath(providerPath);
+        }
+
+        client.create().withMode(CreateMode.EPHEMERAL).forPath(providerPath, instanceMeta.toMetas().getBytes());
 
         log.info(String.format("register %s to zookeeper", providerPath));
 
@@ -89,8 +103,26 @@ public class ZkRegisterCenter implements RegisterCenter {
 
         List<InstanceMeta> instanceMetas = new ArrayList<>();
         nodes.forEach(n -> {
+
+            System.out.println(" node: " + n);
+
             String[] node = n.split("_");
             InstanceMeta instance = InstanceMeta.http(node[0], Integer.parseInt(node[1]));
+
+            System.out.println(" instance: " + instance.toUrl());
+            String nodePath = servicePath + "/" + instance.toPath();
+            byte[] bytes;
+            try {
+                bytes = client.getData().forPath(nodePath);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            Map<String,Object> params = JSON.parseObject(new String(bytes));
+            params.forEach((k,v) -> {
+                System.out.println(k + " -> " +v);
+                instance.getParameters().put(k,v==null?null:v.toString());
+            });
+
             instanceMetas.add(instance);
         });
 

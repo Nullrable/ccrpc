@@ -1,5 +1,7 @@
 package cc.rpc.core.meta;
 
+import com.alibaba.fastjson.JSON;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +21,8 @@ public class InstanceMeta {
     private String context;
 
     private boolean status = true; // online or offline
-    private Map<String, String> parameters;  // idc  A B C
+
+    private Map<String, String> parameters = new HashMap<>();  // idc  A B C
 
     public InstanceMeta(String scheme, String host, Integer port, String context) {
         this.scheme = scheme;
@@ -39,4 +42,9 @@ public class InstanceMeta {
     public static InstanceMeta http(String host, Integer port) {
         return new InstanceMeta("http", host, port, "");
     }
+
+    public String toMetas() {
+       return JSON.toJSONString(this.getParameters());
+    }
+
 }

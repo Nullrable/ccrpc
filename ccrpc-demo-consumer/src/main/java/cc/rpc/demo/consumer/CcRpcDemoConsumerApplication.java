@@ -1,22 +1,15 @@
 package cc.rpc.demo.consumer;
 
 import cc.rpc.core.annotation.CcConsumer;
-import cc.rpc.core.consumer.ConsumerBootstrap;
-import cc.rpc.core.consumer.ConsumerConfig;
+import cc.rpc.core.config.ConsumerConfig;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.Order;
 
 @SpringBootApplication
 @Import(ConsumerConfig.class)

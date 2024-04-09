@@ -16,19 +16,13 @@ import java.lang.reflect.Method;
 import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ResponseBody;
-import org.apache.catalina.Executor;
 
 /**
  * @author nhsoft.lsd
@@ -60,13 +54,14 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         this.context = context;
         this.providers = providers;
 
-        int readTimeout = Integer.parseInt(context.getParameters().getOrDefault("app.read-timout", "0"));
-        int connectTimeout = Integer.parseInt(context.getParameters().getOrDefault("app.connect-timout", "0"));
-
-        this.httpInvoker = new OkHttpInvoker(connectTimeout, readTimeout);
+        this.httpInvoker = new OkHttpInvoker(context.getConsumerProperties().getReadTimeout(),
+                context.getConsumerProperties().getReadTimeout());
 
         singleService = new ScheduledThreadPoolExecutor(1);
-        singleService.scheduleWithFixedDelay(this::halfOpen, 10, 60, TimeUnit.SECONDS);
+        singleService.scheduleWithFixedDelay(this::halfOpen,
+                context.getConsumerProperties().getHalfOpenInitialDelay(),
+                context.getConsumerProperties().getHalfOpenDelay(),
+                TimeUnit.SECONDS);
     }
 
     @Override
@@ -79,9 +74,8 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         request.setMethodSign(MethodUtil.methodSign(method));
         request.setArgs(args);
 
-        int retries = Integer.parseInt(context.getParameters().getOrDefault("app.retries", "1"));
 
-        for (int i = 0; i < retries; i++) {
+        for (int i = 0; i < context.getConsumerProperties().getRetries(); i++) {
             List<Filter> filters = context.getFilters();
             if (filters != null && !filters.isEmpty()) {
                 for (Filter filter : filters) {
@@ -112,7 +106,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
 
                 SlidingTimeWindow window = windows.computeIfAbsent(url, k -> new SlidingTimeWindow());
                 int recordSum = window.getSum();
-                if (recordSum > 10) {
+                if (recordSum > context.getConsumerProperties().getFaultLimit()) {
                     //依赖滑动窗口计算，一段时间内同一个实例失败次数大达到阈值，则放入到隔离服务实例中
                     isolated(instance);
                 }
@@ -120,7 +114,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
                 window.record(System.currentTimeMillis());
                 //如果读取超时，则进行重试
                 if (ex instanceof SocketTimeoutException) {
-                    if (retries - 1 == i) {
+                    if (context.getConsumerProperties().getRetries() - 1 == i) {
                         throw new CcRpcException(CcRpcException.READ_TIMEOUT_EX);
                     }
                     continue;

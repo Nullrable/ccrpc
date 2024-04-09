@@ -4,6 +4,8 @@ import cc.rpc.core.annotation.CcProvider;
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
+import cc.rpc.core.config.AppProperties;
+import cc.rpc.core.config.ProviderProperties;
 import cc.rpc.core.meta.InstanceMeta;
 import cc.rpc.core.meta.ProviderMeta;
 import cc.rpc.core.meta.ServiceMeta;
@@ -51,17 +53,15 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private InstanceMeta instance;
 
-    @Value("${app.id}")
-    private String app;
+    private int serverPort;
+    private AppProperties appProperties;
+    private ProviderProperties providerProperties;
 
-    @Value("${app.namespace}")
-    private String namespace;
-
-    @Value("${app.env}")
-    private String env;
-
-    @Value("${server.port}")
-    private int port;
+    public ProviderBootstrap(final int serverPort, final AppProperties appProperties, final ProviderProperties providerProperties) {
+        this.serverPort = serverPort;
+        this.appProperties = appProperties;
+        this.providerProperties = providerProperties;
+    }
 
     @Override
     public void setApplicationContext(@NotNull final ApplicationContext applicationContext) throws BeansException {
@@ -88,7 +88,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     private void registerService(String service) {
-        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(appProperties.getId()).namespace(appProperties.getNamespace()).env(appProperties.getEnv()).service(service).build();
         registerCenter.register(serviceMeta, instance);
     }
 
@@ -101,7 +101,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     private void unregisterService(String service) {
-        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).service(service).build();
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(appProperties.getId()).namespace(appProperties.getNamespace()).env(appProperties.getEnv()).service(service).build();
         registerCenter.unregister(serviceMeta, instance);
     }
 
@@ -135,6 +135,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private InstanceMeta createInstance() {
         //注册服务
         String ip = InetAddress.getLocalHost().getHostAddress();
-        return InstanceMeta.http(ip, port);
+        InstanceMeta instanceMeta = InstanceMeta.http(ip, serverPort);
+        instanceMeta.setParameters(providerProperties.getMetas());
+        return instanceMeta;
     }
 }
