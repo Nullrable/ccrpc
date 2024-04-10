@@ -1,6 +1,8 @@
 package cc.rpc.demo.consumer;
 
 import cc.rpc.demo.provider.CcRpcDemoProviderApplication;
+import java.io.IOException;
+import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,10 +19,17 @@ class CcrpcDemoConsumerApplicationTests {
 
     static ApplicationContext context;
 
+    static TestingServer zkServer;
+
     @BeforeAll
-    public static void init() {
-        System.out.println("starting consumer BeforeAll");
-        context = SpringApplication.run(CcRpcDemoProviderApplication.class, "--server.port=7001");
+    public static void init() throws Exception {
+        System.out.println("starting consumer...");
+
+        zkServer = new TestingServer(2182, true);
+
+        context = SpringApplication.run(CcRpcDemoProviderApplication.class, "--server.port=7001", "--ccrpc.zk.server=localhost:2182");
+
+
     }
 
     @Test
@@ -29,8 +38,12 @@ class CcrpcDemoConsumerApplicationTests {
     }
 
     @AfterAll
-    public static void destory(){
+    public static void destroy() throws IOException {
+        System.out.println("stopping consumer...");
         SpringApplication.exit(context, () -> 1 );
+        zkServer.stop();
+
     }
+
 
 }

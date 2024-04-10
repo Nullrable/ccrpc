@@ -38,13 +38,13 @@ public class TypeUtil {
            }
        }
 
-       if (arg instanceof Map map) {
-           return new JSONObject(map).toJavaObject(origin);
-       }
-
         if (arg instanceof JSONObject jsonObject) {
             return jsonObject.toJavaObject(origin);
         }
+
+       if (arg instanceof Map map) {
+           return new JSONObject(map).toJavaObject(origin);
+       }
 
         if (origin.equals(Double.class)  || origin.equals(double.class)) {
             return Double.valueOf(arg.toString());
