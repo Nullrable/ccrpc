@@ -2,6 +2,7 @@ package cc.rpc.demo.provider.api.impl;
 
 import cc.rpc.core.annotation.CcProvider;
 import cc.rpc.core.api.CcRpcException;
+import cc.rpc.core.api.RpcContext;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
 import jakarta.annotation.Resource;
@@ -121,6 +122,8 @@ public class UserServiceImpl implements UserService {
     String ports = "9002";
     @Override
     public User timeout(int timout) {
+
+        System.out.println(" =======> 跨应用上下文调用：" + RpcContext.get("lsd"));
 
         String port = environment.getProperty("server.port");
 

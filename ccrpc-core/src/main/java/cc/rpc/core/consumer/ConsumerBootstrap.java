@@ -108,6 +108,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                 }
             });
         }
+
+        log.info("consumer bootstrap started");
     }
 
     private Object createConsumerFromRegister(Class<?> service, RpcContext context, RegisterCenter rc) {
@@ -122,6 +124,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
     }
 
     private Object createConsumer(Class<?> service, RpcContext context, List<InstanceMeta> providers) {
+
         return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CcRpcInvocationHandler(service, context, providers));
     }
 }

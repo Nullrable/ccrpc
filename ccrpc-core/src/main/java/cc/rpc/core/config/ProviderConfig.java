@@ -5,6 +5,7 @@ import cc.rpc.core.consumer.HttpInvoker;
 import cc.rpc.core.provider.ProviderBootstrap;
 import cc.rpc.core.provider.ProviderInvoker;
 import cc.rpc.core.registry.zk.ZkRegisterCenter;
+import cc.rpc.core.transport.SpringBootTransport;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -19,7 +20,7 @@ import org.springframework.core.annotation.Order;
  * @author nhsoft.lsd
  */
 @Configuration
-@Import({ProviderProperties.class, AppProperties.class, ZkProperties.class})
+@Import({ProviderProperties.class, AppProperties.class, ZkProperties.class, SpringBootTransport.class})
 public class ProviderConfig {
 
     @Value("${server.port}")

@@ -93,6 +93,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.4.12</version>
                 <configuration>
+                    <classifier>boot</classifier>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

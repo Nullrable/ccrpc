@@ -30,24 +30,22 @@ import okhttp3.ResponseBody;
 @Slf4j
 public class CcRpcInvocationHandler implements InvocationHandler {
 
-    private Class<?> service;
+    private final Class<?> service;
 
-    private RpcContext context;
+    private final RpcContext context;
 
-    private HttpInvoker httpInvoker;
+    private final HttpInvoker httpInvoker;
 
     //活跃的服务实例
-    private List<InstanceMeta> providers;
+    private final List<InstanceMeta> providers;
 
     //隔离的服务实例
-    private List<InstanceMeta> isolatedProviders = new CopyOnWriteArrayList<>();
+    private final List<InstanceMeta> isolatedProviders = new CopyOnWriteArrayList<>();
 
     //半开的服务实例，用于每隔一段时间进行探活，请求一次成功后，从隔离和半开的移除，加入到活跃的服务实例中
-    private List<InstanceMeta> halfOpenProviders = new CopyOnWriteArrayList<>();
+    private final List<InstanceMeta> halfOpenProviders = new CopyOnWriteArrayList<>();
 
-    private Map<String, SlidingTimeWindow> windows = new ConcurrentHashMap<>();
-
-    private ScheduledExecutorService singleService;
+    private final Map<String, SlidingTimeWindow> windows = new ConcurrentHashMap<>();
 
     public CcRpcInvocationHandler(Class<?> clazz, RpcContext context, List<InstanceMeta> providers) {
         this.service = clazz;
@@ -57,7 +55,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         this.httpInvoker = new OkHttpInvoker(context.getConsumerProperties().getReadTimeout(),
                 context.getConsumerProperties().getReadTimeout());
 
-        singleService = new ScheduledThreadPoolExecutor(1);
+        ScheduledExecutorService singleService = new ScheduledThreadPoolExecutor(1);
         singleService.scheduleWithFixedDelay(this::halfOpen,
                 context.getConsumerProperties().getHalfOpenInitialDelay(),
                 context.getConsumerProperties().getHalfOpenDelay(),
@@ -73,7 +71,6 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         request.setService(service.getName());
         request.setMethodSign(MethodUtil.methodSign(method));
         request.setArgs(args);
-
 
         for (int i = 0; i < context.getConsumerProperties().getRetries(); i++) {
             List<Filter> filters = context.getFilters();

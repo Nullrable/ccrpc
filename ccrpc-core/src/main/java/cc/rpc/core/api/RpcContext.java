@@ -21,4 +21,22 @@ public class RpcContext {
    private List<Filter> filters;
 
    private ConsumerProperties consumerProperties;
+
+   private static final ThreadLocal<Map<String, String>> CONTEXT = ThreadLocal.withInitial(HashMap::new);
+
+   public static String get(String key) {
+      return CONTEXT.get().get(key);
+   }
+
+   public static void put(String key, String value) {
+      CONTEXT.get().put(key, value);
+   }
+
+   public static void clear() {
+      CONTEXT.get().clear();
+   }
+
+   public static Map<String, String> getContext() {
+      return CONTEXT.get();
+   }
 }

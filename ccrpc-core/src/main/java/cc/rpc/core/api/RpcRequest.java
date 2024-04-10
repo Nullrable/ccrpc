@@ -1,5 +1,7 @@
 package cc.rpc.core.api;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Data;
 import lombok.ToString;
 
@@ -23,5 +25,10 @@ public class RpcRequest {
     /**
      * 参数.
      */
-    private Object[] args;  // 参数： 100
+    private Object[] args;  // 参数： 100e
+
+    /**
+     * 跨调用方需要传递的参数
+     */
+    private Map<String, String> parameters = new HashMap<>();
 }

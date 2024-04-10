@@ -7,6 +7,7 @@ import cc.rpc.core.api.Router;
 import cc.rpc.core.cluster.GrayRouter;
 import cc.rpc.core.cluster.RoundRibbonLoadBalancer;
 import cc.rpc.core.consumer.ConsumerBootstrap;
+import cc.rpc.core.filter.ContextParameterFilter;
 import cc.rpc.core.registry.zk.ZkRegisterCenter;
 import jakarta.annotation.Resource;
 import lombok.Data;
@@ -16,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 
 /**
@@ -37,6 +39,7 @@ public class ConsumerConfig {
     private ZkProperties zkProperties;
 
     @Bean
+    @Primary
     ConsumerBootstrap createConsumerBootstrap() {
         return new ConsumerBootstrap(appProperties, consumerProperties);
     }
@@ -65,7 +68,7 @@ public class ConsumerConfig {
 
     @Bean
     public Filter filter() {
-        return Filter.Default;
+        return new ContextParameterFilter();
     }
 
 }

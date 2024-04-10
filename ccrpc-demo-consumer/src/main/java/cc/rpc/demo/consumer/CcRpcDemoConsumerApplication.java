@@ -1,6 +1,7 @@
 package cc.rpc.demo.consumer;
 
 import cc.rpc.core.annotation.CcConsumer;
+import cc.rpc.core.api.RpcContext;
 import cc.rpc.core.config.ConsumerConfig;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
@@ -94,6 +95,7 @@ public class CcRpcDemoConsumerApplication {
 //        mapList = userService.saveMapList(mapList);
 //        log.info("==============> test14: " + mapList.toString());
 
+        RpcContext.put("lsd", "hhaha");
         User user =  userService.timeout(1000);
         log.info("==============> test15: " + user.toString());
 

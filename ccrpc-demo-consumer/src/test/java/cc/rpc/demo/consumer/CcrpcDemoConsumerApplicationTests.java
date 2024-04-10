@@ -1,7 +1,6 @@
 package cc.rpc.demo.consumer;
 
 import cc.rpc.demo.provider.CcRpcDemoProviderApplication;
-import jakarta.annotation.PreDestroy;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
