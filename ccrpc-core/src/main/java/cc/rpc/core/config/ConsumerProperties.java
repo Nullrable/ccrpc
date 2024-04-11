@@ -26,4 +26,6 @@ public class ConsumerProperties {
     private int halfOpenDelay = 60;
 
     private int faultLimit = 10;
+
+    private int qps = 100;
 }

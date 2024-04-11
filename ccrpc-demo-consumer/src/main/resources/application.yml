@@ -6,7 +6,7 @@ server:
 
 ccrpc:
   zk:
-    server: 127.0.0.1:2182
+    server: 127.0.0.1:2181
     root: ccrpc2
   app:
     id: app1
@@ -20,9 +20,11 @@ ccrpc:
     faultLimit: 10 # 30s 内10次错误则隔离
     halfOpenInitialDelay: 10000
     halfOpenDelay: 60000
+    qps: 100
 
 
 
 logging:
   level:
     root: info
+    cc.rpc: debug

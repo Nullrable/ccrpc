@@ -47,7 +47,9 @@ public class CcRpcInvocationHandler implements InvocationHandler {
     //半开的服务实例，用于每隔一段时间进行探活，请求一次成功后，从隔离和半开的移除，加入到活跃的服务实例中
     private final List<InstanceMeta> halfOpenProviders = new CopyOnWriteArrayList<>();
 
-    private final Map<String, SlidingTimeWindow> windows = new ConcurrentHashMap<>();
+    private final Map<String, SlidingTimeWindow> isolateController = new ConcurrentHashMap<>();
+
+    private final Map<String, SlidingTimeWindow> trafficController = new ConcurrentHashMap<>();
 
     public CcRpcInvocationHandler(Class<?> clazz, RpcContext context, List<InstanceMeta> providers) {
         this.service = clazz;
@@ -74,7 +76,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         request.setMethodSign(MethodUtil.methodSign(method));
         request.setArgs(args);
 
-        for (int i = 0; i < context.getConsumerProperties().getRetries(); i++) {
+        for (int i = 1; i <= context.getConsumerProperties().getRetries(); i++) {
             List<Filter> filters = context.getFilters();
             if (filters != null && !filters.isEmpty()) {
                 for (Filter filter : filters) {
@@ -97,20 +99,29 @@ public class CcRpcInvocationHandler implements InvocationHandler {
 
             ResponseBody responseBody;
             String url = instance.toUrl();
+
+            SlidingTimeWindow trafficWindow = trafficController.computeIfAbsent(url, k -> new SlidingTimeWindow(1));
+
+            if (trafficWindow.getSum() > context.getConsumerProperties().getQps()) {
+                log.debug(" ========> traffic limit 100 invoker url: {}", instance.toUrl());
+                throw new CcRpcException("traffic limit 100 invoker url: " + instance.toUrl());
+            }
+            trafficWindow.record(System.currentTimeMillis());
+
             try {
                 log.debug(" ========> retries: {} invoker url: {}", i, instance.toUrl());
                 responseBody = httpInvoker.post(url, request);
             } catch (Exception ex){
                 log.error(ex.getMessage(), ex);
 
-                SlidingTimeWindow window = windows.computeIfAbsent(url, k -> new SlidingTimeWindow());
-                int recordSum = window.getSum();
+                SlidingTimeWindow faultWindow = isolateController.computeIfAbsent(url, k -> new SlidingTimeWindow());
+                int recordSum = faultWindow.getSum();
                 if (recordSum > context.getConsumerProperties().getFaultLimit()) {
                     //依赖滑动窗口计算，一段时间内同一个实例失败次数大达到阈值，则放入到隔离服务实例中
                     isolated(instance);
                 }
 
-                window.record(System.currentTimeMillis());
+                faultWindow.record(System.currentTimeMillis());
                 //如果读取超时，则进行重试
                 if (ex instanceof SocketTimeoutException) {
                     if (context.getConsumerProperties().getRetries() - 1 == i) {
