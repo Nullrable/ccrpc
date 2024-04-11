@@ -1,7 +1,6 @@
 package cc.rpc.core.config;
 
 import cc.rpc.core.api.RegisterCenter;
-import cc.rpc.core.consumer.HttpInvoker;
 import cc.rpc.core.provider.ProviderBootstrap;
 import cc.rpc.core.provider.ProviderInvoker;
 import cc.rpc.core.registry.zk.ZkRegisterCenter;
@@ -10,7 +9,6 @@ import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

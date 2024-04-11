@@ -26,6 +26,7 @@ public class CcRpcException extends RuntimeException {
     public static final String RESPONSE_NULL = "X001-" + "http response body is null";
     public static final String ILLEGAL_ACCESS_EX = "X002-" + "IllegalAccessException";
     public static final String READ_TIMEOUT_EX = "X003-" + "read timeout";
+    public static final String TRAFFIC_LIMIT = "X004-" + "traffic controller limit";
     public static final String APP_RETRIES_MUST_GATHER_THAN_ZERO = "X004-" + "app.retries must gather than 0";
 
     public static final String UNKNOWN = "Z001-" + "unknown error ";

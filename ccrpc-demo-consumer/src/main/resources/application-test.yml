@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: ccrpc-demo-consumer
+server:
+  port: 8000
+
+ccrpc:
+  zk:
+    server: 127.0.0.1:2182
+    root: ccrpc2
+  app:
+    id: app1
+    namespace: public
+    env: dev
+  consumer:
+    retries: 2
+    grayRatio: 33
+    connect-timeout: 5000
+    read-timeout: 1000
+    faultLimit: 10 # 30s 内10次错误则隔离
+    halfOpenInitialDelay: 10000
+    halfOpenDelay: 60000
+    qps: 100
+
+
+
+logging:
+  level:
+    root: info
+    cc.rpc: debug

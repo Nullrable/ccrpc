@@ -2,6 +2,7 @@ package cc.rpc.core.api;
 
 import cc.rpc.core.config.AppProperties;
 import cc.rpc.core.config.ConsumerProperties;
+import cc.rpc.core.config.ProviderProperties;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,8 @@ public class RpcContext {
    private ConsumerProperties consumerProperties;
 
    private AppProperties appProperties;
+
+   private ProviderProperties providerProperties;
 
    private static final ThreadLocal<Map<String, String>> CONTEXT = ThreadLocal.withInitial(HashMap::new);
 
