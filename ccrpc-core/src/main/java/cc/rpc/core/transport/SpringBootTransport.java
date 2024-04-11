@@ -18,7 +18,7 @@ public class SpringBootTransport {
     @Resource
     private ProviderInvoker providerInvoker;
 
-    @PostMapping("/")
+    @PostMapping("/ccrpc")
     public RpcResponse invoke(@RequestBody RpcRequest request) {
 
         if (RpcContext.getContext() != null) {

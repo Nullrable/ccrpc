@@ -4,14 +4,17 @@ import cc.rpc.core.api.Filter;
 import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.Router;
+import cc.rpc.core.api.RpcContext;
 import cc.rpc.core.cluster.GrayRouter;
 import cc.rpc.core.cluster.RoundRibbonLoadBalancer;
 import cc.rpc.core.consumer.ConsumerBootstrap;
 import cc.rpc.core.filter.ContextParameterFilter;
 import cc.rpc.core.registry.zk.ZkRegisterCenter;
 import jakarta.annotation.Resource;
+import java.util.List;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -41,7 +44,7 @@ public class ConsumerConfig {
     @Bean
     @Primary
     ConsumerBootstrap createConsumerBootstrap() {
-        return new ConsumerBootstrap(appProperties, consumerProperties);
+        return new ConsumerBootstrap();
     }
 
     @Bean
@@ -69,6 +72,22 @@ public class ConsumerConfig {
     @Bean
     public Filter filter() {
         return new ContextParameterFilter();
+    }
+
+    @Bean
+    public RpcContext rpcContext(@Autowired LoadBalancer loadBalancer,
+                                 @Autowired Router router,
+                                 @Autowired List<Filter> filters) {
+
+        RpcContext context = new RpcContext();
+        context.setRouter(router);
+        context.setLoadBalancer(loadBalancer);
+        context.setFilters(filters);
+        context.setConsumerProperties(consumerProperties);
+        context.setAppProperties(appProperties);
+        log.debug(" =========> consumer rpc context: {}", context);
+
+        return context;
     }
 
 }

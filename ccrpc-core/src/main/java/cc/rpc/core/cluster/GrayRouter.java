@@ -31,7 +31,7 @@ public class GrayRouter implements Router {
 
         providers.forEach(p -> {
 
-            log.info(" ======> GrayRouter 解析 InstanceMeta {} ", p);
+            log.debug(" ======> gray router instance meta {} ", p);
 
             if("true".equals(p.getParameters().get("gray"))) {
                 grayNodes.add(p);

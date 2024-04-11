@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.ResponseBody;
 
 /**
+ * Consumer InvocationHandler.
+ *
  * @author nhsoft.lsd
  */
 @Slf4j
@@ -65,7 +67,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
-        log.info(" ===> request: " + JSON.toJSONString(args));
+        log.debug(" ===> request: {}", JSON.toJSONString(args));
 
         RpcRequest request = new RpcRequest();
         request.setService(service.getName());
@@ -96,7 +98,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
             ResponseBody responseBody;
             String url = instance.toUrl();
             try {
-                log.info(" ========> retries: " + i + " invoker url: " + instance.toUrl());
+                log.debug(" ========> retries: {} invoker url: {}", i, instance.toUrl());
                 responseBody = httpInvoker.post(url, request);
             } catch (Exception ex){
                 log.error(ex.getMessage(), ex);
@@ -126,7 +128,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
             }
 
             String resultJson = responseBody.string();
-            log.info(" ===> result: " + resultJson);
+            log.debug(" ===> result: {}", resultJson);
 
             RpcResponse rpcResponse = JSON.parseObject(resultJson, RpcResponse.class);
 
@@ -160,9 +162,9 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         if (!providers.contains(instance)) {
             isolatedProviders.remove(instance);
             providers.add(instance);
-            log.info("instance {} is recovered, isolatedProviders={}, providers={}"
-                    , instance, isolatedProviders, providers);
             instance.setStatus(true);
+
+            log.debug("instance {} is recovered, isolatedProviders={}, providers={}", instance, isolatedProviders, providers);
         }
     }
 
@@ -172,16 +174,16 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         halfOpenProviders.clear();
         halfOpenProviders.addAll(isolatedProviders);
 
-        log.info(" ====> half open halfOpenProviders: " + halfOpenProviders);
+        log.debug(" ====> halfOpenProviders: {}", halfOpenProviders);
     }
 
-    //
+
     private void isolated(final InstanceMeta instance) {
-        log.info(" ==> isolate instance: " + instance);
+        log.debug(" ==> isolate instance: {}", instance);
         providers.remove(instance);
-        log.info(" ==> providers = {}", providers);
+        log.debug(" ==> providers = {}", providers);
         isolatedProviders.add(instance);
         instance.setStatus(false);
-        log.info(" ==> isolatedProviders = {}", isolatedProviders);
+        log.debug(" ==> isolatedProviders = {}", isolatedProviders);
     }
 }

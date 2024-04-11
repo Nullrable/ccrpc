@@ -7,7 +7,6 @@ import cc.rpc.core.meta.ServiceMeta;
 import cc.rpc.core.registry.ChangedListener;
 import cc.rpc.core.registry.Event;
 import com.alibaba.fastjson.JSON;
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author nhsoft.lsd
@@ -64,6 +62,8 @@ public class ZkRegisterCenter implements RegisterCenter {
             client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
         }
 
+        log.debug(String.format("register service path %s to zookeeper", servicePath));
+
         String providerPath = servicePath + "/" + instanceMeta.toPath();
 
         if (client.checkExists().forPath(providerPath) != null) {
@@ -72,7 +72,7 @@ public class ZkRegisterCenter implements RegisterCenter {
 
         client.create().withMode(CreateMode.EPHEMERAL).forPath(providerPath, instanceMeta.toMetas().getBytes());
 
-        log.info(String.format("register %s to zookeeper", providerPath));
+        log.debug(String.format("register provider path %s to zookeeper", providerPath));
 
     }
 
@@ -82,7 +82,7 @@ public class ZkRegisterCenter implements RegisterCenter {
 
         String servicePath = "/" + service.toPath();;
 
-        log.info(String.format("unregistering %s from zookeeper", servicePath));
+        log.debug(String.format("unregistering service path %s from zookeeper", servicePath));
 
         if (client.checkExists().forPath(servicePath) == null) {
             client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
@@ -90,7 +90,7 @@ public class ZkRegisterCenter implements RegisterCenter {
         String providerPath = servicePath + "/" + instanceMeta.toPath();
         client.delete().quietly().forPath(providerPath);
 
-        log.info(String.format("unregister %s from zookeeper", providerPath));
+        log.debug(String.format("unregister provider path %s from zookeeper", providerPath));
     }
 
     @Override
@@ -135,14 +135,14 @@ public class ZkRegisterCenter implements RegisterCenter {
     @SneakyThrows
     public void subscribe(final ServiceMeta service, final ChangedListener listener) {
 
-        log.info("subscribe to zk" + service);
+        log.debug("subscribe to zookeeper {}", service);
 
         final TreeCache cache = TreeCache.newBuilder(client, "/" + service.toPath())
                 .setCacheData(true).setMaxDepth(2).build();
         cache.getListenable().addListener(
                 (curator, event) -> {
                     // 有任何节点变动这里会执行
-                    log.info("zk subscribe event: " + event);
+                    log.debug("zookeeper subscribe event: {}", event);
                     List<InstanceMeta> instances = fetchAll(service);
                     listener.fire(new Event(instances));
                 }

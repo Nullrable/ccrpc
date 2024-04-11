@@ -40,7 +40,7 @@ public interface RegisterCenter {
 
         @Override
         public void stop() {
-            log.info("register center stop");
+            log.info("static register center stop");
         }
 
         @Override

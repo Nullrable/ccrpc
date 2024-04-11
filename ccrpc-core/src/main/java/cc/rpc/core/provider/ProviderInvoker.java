@@ -43,10 +43,10 @@ public class ProviderInvoker {
             return new RpcResponse<>(true, result, null);
 
         } catch (InvocationTargetException | IllegalAccessException e) {
-            log.info(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return new RpcResponse<>(false, null, new CcRpcException(e.getMessage()));
         } catch (Exception e) {
-            log.info(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return new RpcResponse<>(false, null, new CcRpcException(CcRpcException.UNKNOWN));
         }
     }

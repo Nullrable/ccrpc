@@ -41,13 +41,9 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
     private RegisterCenter rc;
 
-    private AppProperties appProperties;
+    private RpcContext context;
 
-    private ConsumerProperties consumerProperties;
-
-    public ConsumerBootstrap(final AppProperties appProperties, final ConsumerProperties consumerProperties) {
-        this.appProperties = appProperties;
-        this.consumerProperties = consumerProperties;
+    public ConsumerBootstrap() {
     }
 
     @Override
@@ -57,28 +53,19 @@ public class ConsumerBootstrap implements ApplicationContextAware {
 
     @PreDestroy
     public void stop() {
-        log.info("consumer bootstrap stopped");
+        log.info("consumer bootstrap stopping");
         rc.stop();
+        log.info("consumer bootstrap stopped");
     }
 
     public void start() {
 
         log.info("consumer bootstrap starting");
 
-        LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
-        Router router = applicationContext.getBean(Router.class);
-        Map<String, Filter> filterMap = applicationContext.getBeansOfType(Filter.class);
-        List<Filter> filters = filterMap.values().stream().sorted().collect(Collectors.toList());
-
         rc = applicationContext.getBean(RegisterCenter.class);
-        rc.start();
+        context = applicationContext.getBean(RpcContext.class);
 
-        RpcContext context = new RpcContext();
-        context.setRouter(router);
-        context.setLoadBalancer(loadBalancer);
-        context.setFilters(filters);
-        context.setConsumerProperties(consumerProperties);
-        log.info(" =========> rpc context: " + context);
+        rc.start();
 
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {
@@ -113,7 +100,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
     }
 
     private Object createConsumerFromRegister(Class<?> service, RpcContext context, RegisterCenter rc) {
-        ServiceMeta serviceMeta = ServiceMeta.builder().app(appProperties.getId()).namespace(appProperties.getNamespace()).env(appProperties.getEnv()).service(service.getCanonicalName()).build();
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(context.getAppProperties().getId()).namespace(context.getAppProperties().getNamespace()).env(context.getAppProperties().getEnv()).service(service.getCanonicalName()).build();
         List<InstanceMeta> providers = rc.fetchAll(serviceMeta);
         Object proxy = createConsumer(service, context, providers);
         rc.subscribe(serviceMeta, event -> {

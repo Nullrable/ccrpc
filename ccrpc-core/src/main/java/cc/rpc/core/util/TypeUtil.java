@@ -107,15 +107,15 @@ public class TypeUtil {
                                     });
                                     returnList.add(resultMap);
                                 } else {
-                                    log.info("not match " + s);
+                                    log.warn("not match {}", s);
                                 }
                             });
                             result[i] = returnList;
                         } else {
-                            log.info("=======>未找到泛型1" + actureType);
+                            log.warn("=======> 未找到泛型1{}", actureType);
                         }
                     } else {
-                        log.info("=======>未找到泛型2" + parameterClass);
+                        log.warn("=======>未找到泛型2{}", parameterClass);
                     }
                 } else if (parameter instanceof Map<?, ?> parameterMap) {
 
@@ -197,7 +197,7 @@ public class TypeUtil {
                                 });
                                 returnList.add(resultMap);
                             } else {
-                                log.info("not match " + s);
+                                log.warn("not match {}", s);
                             }
                         });
                         return returnList;
