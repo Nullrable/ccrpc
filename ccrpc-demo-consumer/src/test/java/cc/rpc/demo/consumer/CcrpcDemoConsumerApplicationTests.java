@@ -29,7 +29,6 @@ class CcrpcDemoConsumerApplicationTests {
 
         context = SpringApplication.run(CcRpcDemoProviderApplication.class, "--server.port=7001", "--ccrpc.zk.server=localhost:2182");
 
-
     }
 
     @Test

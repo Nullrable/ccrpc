@@ -14,8 +14,7 @@ ccrpc:
       dc: bj
       gray: false
       unit: B001
-      tc: 300
-
+      trafficLimit: 200 # 流控
 
 logging:
   level:
