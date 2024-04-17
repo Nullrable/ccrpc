@@ -32,12 +32,7 @@ public class CcRpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner testRunner() {
         return x -> {
-            try {
-                testCase();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-
+//            testCase();
         };
     }
 

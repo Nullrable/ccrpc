@@ -50,6 +50,13 @@ public class ProviderConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    ApolloConfigRefresher provider_apolloChangedListener() {
+        return new ApolloConfigRefresher();
+    }
+
+
+    @Bean
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner createConsumerApplicationRunner(ProviderBootstrap providerBootstrap) {
         return x -> {

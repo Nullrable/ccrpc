@@ -26,17 +26,23 @@ public class ProviderInvoker {
 
     private final Map<String, SlidingTimeWindow> trafficController = new ConcurrentHashMap<>();
 
-    private final int trafficLimit;
+//    private final int tc;
+
+    private ProviderProperties providerProperties;
 
     public ProviderInvoker(final ProviderBootstrap providerBootstrap) {
         this.skeleton = providerBootstrap.getSkeleton();
-        trafficLimit = Integer.parseInt(providerBootstrap.getProviderProperties().getMetas().getOrDefault("trafficLimit", "20"));
+        providerProperties = providerBootstrap.getProviderProperties();
     }
 
     public RpcResponse<?> invoke(final RpcRequest request) {
 
         List<ProviderMeta> providerMetas = skeleton.get(request.getService());
         try {
+
+            if (RpcContext.getContext() != null) {
+                request.getParameters().forEach(RpcContext::put);
+            }
 
             ProviderMeta providerMeta = providerMetas.stream().filter(meta -> request.getMethodSign().equals(meta.getMethodSign())).findFirst().orElse(null);
 
@@ -46,11 +52,12 @@ public class ProviderInvoker {
 
             String service = request.getService();
 
-            synchronized (trafficController) {
-                SlidingTimeWindow trafficWindow = trafficController.computeIfAbsent(service, k -> new SlidingTimeWindow(1));
+            int tc =  Integer.parseInt(providerProperties.getMetas().getOrDefault("tc", "20"));
 
-                if (trafficWindow.calcSum() > trafficLimit) {
-                    log.debug(" ========> traffic limit {} invoker url: {}", trafficLimit, service);
+            synchronized (trafficController) {
+                SlidingTimeWindow trafficWindow = trafficController.computeIfAbsent(service, k -> new SlidingTimeWindow(30));
+                if (trafficWindow.calcSum() > tc) {
+                    log.debug(" ========> invoker url: {} traffic limit {} ", tc, service);
                     throw new CcRpcException(CcRpcException.TRAFFIC_LIMIT);
                 }
                 trafficWindow.record(System.currentTimeMillis());
@@ -74,6 +81,8 @@ public class ProviderInvoker {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new RpcResponse<>(false, null, new CcRpcException(CcRpcException.UNKNOWN));
+        } finally {
+            RpcContext.clear();
         }
     }
 }

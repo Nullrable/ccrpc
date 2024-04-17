@@ -154,8 +154,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
 
                 return result;
             } else {
-                Exception ex = rpcResponse.getEx();
-                throw new CcRpcException(ex);
+                throw rpcResponse.getEx();
             }
         }
         throw new CcRpcException(CcRpcException.APP_RETRIES_MUST_GATHER_THAN_ZERO);

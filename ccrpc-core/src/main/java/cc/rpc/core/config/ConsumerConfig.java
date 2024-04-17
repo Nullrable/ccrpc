@@ -75,6 +75,12 @@ public class ConsumerConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    ApolloConfigRefresher provider_apolloChangedListener() {
+        return new ApolloConfigRefresher();
+    }
+
+    @Bean
     public RpcContext rpcContext(@Autowired LoadBalancer loadBalancer,
                                  @Autowired Router router,
                                  @Autowired List<Filter> filters) {

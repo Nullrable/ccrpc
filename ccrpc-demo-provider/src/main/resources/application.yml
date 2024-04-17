@@ -1,6 +1,18 @@
 server:
   port: 9000
 
+app:
+  id: tgrpc
+
+# Apollo 配置中心地址
+apollo:
+  meta: http://localhost:8080
+  cluster: default # 指定集群名称
+  namespaces: application # 指定命名空间
+  env: LOCAL
+  bootstrap:
+    enabled: true # 是否开启自动配置
+
 ccrpc:
   zk:
     server: 127.0.0.1:2181
@@ -14,7 +26,7 @@ ccrpc:
       dc: bj
       gray: false
       unit: B001
-      trafficLimit: 200 # 流控
+      tc: 200 # 流控
 
 logging:
   level:

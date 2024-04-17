@@ -12,5 +12,5 @@ public class RpcResponse<T> {
 
     private boolean status;
     private T data;
-    private Exception ex;
+    private CcRpcException ex;
 }

@@ -29,7 +29,11 @@ public class ConsumerController {
 
     @GetMapping("/findId")
     public String findId(@RequestParam("id") Integer id) {
-        return userService.findId(id);
+        try {
+            return userService.findId(id);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
 
     @GetMapping("/timeout")
