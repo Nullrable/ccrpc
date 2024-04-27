@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -53,10 +54,12 @@ public class CcRegisterCenter implements RegisterCenter {
 
     private ScheduledExecutorService subscribeExecutor = new ScheduledThreadPoolExecutor(1);
 
+    private RandomRegisterServerLoadBalancer registerServerLoadBalancer;
 
     public CcRegisterCenter(final CcRegistryProperties properties) {
         this.servers = properties.getServers();
         this.refreshInterval = properties.getRefreshInterval();
+        this.registerServerLoadBalancer = new RandomRegisterServerLoadBalancer();
     }
 
     @Override
@@ -99,8 +102,7 @@ public class CcRegisterCenter implements RegisterCenter {
     @SneakyThrows
     private String leader(List<String> servers) {
 
-        //TODO nhsoft.lsd servers.get(0) 集群模式下处理
-        Request req = new Request.Builder().url(servers.get(0) + "/cluster").build();
+        Request req = new Request.Builder().url(registerServerLoadBalancer.chooseOneFrom(servers) + "/cluster").build();
         List<Server> serverInstants = new ArrayList<>();
         try (ResponseBody responseBody = okHttpClient.newCall(req).execute().body()) {
             assert responseBody != null;
@@ -146,8 +148,7 @@ public class CcRegisterCenter implements RegisterCenter {
     @Override
     public List<InstanceMeta> fetchAll(final ServiceMeta service) {
 
-        //TODO nhsoft.lsd 如果是集群模式应该随机选取
-        Request req = new Request.Builder().url(servers.get(0) + "/fetchAll?service=" + service.toPath()).build();
+        Request req = new Request.Builder().url(registerServerLoadBalancer.chooseOneFrom(servers) + "/fetchAll?service=" + service.toPath()).build();
         String json;
         try (ResponseBody responseBody = okHttpClient.newCall(req).execute().body()) {
             assert responseBody != null;
@@ -175,10 +176,14 @@ public class CcRegisterCenter implements RegisterCenter {
 
     private void longPulling(final ServiceMeta service, final ChangedListener listener) {
         log.info(" ====>>>> long pulling subscribe server: {}", service.toPath());
+        AtomicReference<String> lastServerUrl = new AtomicReference<>();
         subscribeExecutor.submit(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 long startTime = System.currentTimeMillis();
-                Request req = new Request.Builder().url(servers.get(0) + "/subscribe?service=" + service.toPath()).build();
+                if (lastServerUrl.get() == null) {
+                    lastServerUrl.set(registerServerLoadBalancer.chooseOneFrom(servers));
+                }
+                Request req = new Request.Builder().url(lastServerUrl.get() + "/subscribe?service=" + service.toPath()).build();
                 try (Response response = okHttpClient.newCall(req).execute()) {
                     if (response.isSuccessful()) {
                         String json = response.body().string();
@@ -207,11 +212,15 @@ public class CcRegisterCenter implements RegisterCenter {
     }
 
     private void scheduleWithFixedDelay(final ServiceMeta service, final ChangedListener listener) {
+        AtomicReference<String> lastServerUrl = new AtomicReference<>();
         subscribeExecutor.scheduleWithFixedDelay(() -> {
             Long currentVersion = VERSIONS.getOrDefault(service.toPath(), -1L);
 
-            //TODO nhsoft.lsd servers.get(0) 集群模式下处理
-            Request req = new Request.Builder().url(servers.get(0) + "/version?service=" + service.toPath()).build();
+            if (lastServerUrl.get() == null) {
+                lastServerUrl.set(registerServerLoadBalancer.chooseOneFrom(servers));
+            }
+
+            Request req = new Request.Builder().url(lastServerUrl.get() + "/version?service=" + service.toPath()).build();
             try (Response response = okHttpClient.newCall(req).execute()) {
                 Long lastVersion = Long.parseLong(response.body().string());
 
