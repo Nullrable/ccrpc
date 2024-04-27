@@ -3,7 +3,7 @@ package cc.rpc.core.config;
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.provider.ProviderBootstrap;
 import cc.rpc.core.provider.ProviderInvoker;
-import cc.rpc.core.registry.zk.ZkRegisterCenter;
+import cc.rpc.core.registry.cc.CcRegisterCenter;
 import cc.rpc.core.transport.SpringBootTransport;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,7 @@ import org.springframework.core.annotation.Order;
  * @author nhsoft.lsd
  */
 @Configuration
-@Import({ProviderProperties.class, AppProperties.class, ZkProperties.class, SpringBootTransport.class})
+@Import({CcRegistryProperties.class, ProviderProperties.class, AppProperties.class, ZkProperties.class, SpringBootTransport.class})
 public class ProviderConfig {
 
     @Value("${server.port}")
@@ -33,6 +33,9 @@ public class ProviderConfig {
     @Resource
     private ZkProperties zkProperties;
 
+    @Resource
+    private CcRegistryProperties ccregistryProperties;
+
     @Bean
     public ProviderBootstrap createProviderBootstrap() {
         return new ProviderBootstrap(port, appProperties, providerProperties);
@@ -40,8 +43,8 @@ public class ProviderConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public RegisterCenter proivderZkRegisterCenter() {
-        return new ZkRegisterCenter(zkProperties);
+    public RegisterCenter proivderRegisterCenter() {
+        return new CcRegisterCenter(ccregistryProperties);
     }
 
     @Bean

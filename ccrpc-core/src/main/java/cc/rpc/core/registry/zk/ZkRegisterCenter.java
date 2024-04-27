@@ -53,6 +53,11 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
+    public void heartbeat() {
+
+    }
+
+    @Override
     @SneakyThrows
     public void register(final ServiceMeta service, final InstanceMeta instanceMeta) {
 

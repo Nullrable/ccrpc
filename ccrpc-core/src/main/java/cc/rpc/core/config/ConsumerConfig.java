@@ -9,7 +9,7 @@ import cc.rpc.core.cluster.GrayRouter;
 import cc.rpc.core.cluster.RoundRibbonLoadBalancer;
 import cc.rpc.core.consumer.ConsumerBootstrap;
 import cc.rpc.core.filter.ContextParameterFilter;
-import cc.rpc.core.registry.zk.ZkRegisterCenter;
+import cc.rpc.core.registry.cc.CcRegisterCenter;
 import jakarta.annotation.Resource;
 import java.util.List;
 import lombok.Data;
@@ -29,7 +29,7 @@ import org.springframework.core.annotation.Order;
 @Configuration
 @Data
 @Slf4j
-@Import({ConsumerProperties.class, AppProperties.class, ZkProperties.class})
+@Import({CcRegistryProperties.class, ConsumerProperties.class, AppProperties.class, ZkProperties.class})
 public class ConsumerConfig {
 
     @Resource
@@ -40,6 +40,9 @@ public class ConsumerConfig {
 
     @Resource
     private ZkProperties zkProperties;
+
+    @Resource
+    private CcRegistryProperties ccregistryProperties;
 
     @Bean
     @Primary
@@ -57,8 +60,8 @@ public class ConsumerConfig {
     }
     @Bean
     @ConditionalOnMissingBean
-    public RegisterCenter registerCenter() {
-        return new ZkRegisterCenter(zkProperties);
+    public RegisterCenter registerRegistryCenter() {
+        return new CcRegisterCenter(ccregistryProperties);
     }
 
     @Bean

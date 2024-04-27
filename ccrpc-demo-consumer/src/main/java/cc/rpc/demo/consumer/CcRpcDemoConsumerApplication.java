@@ -32,7 +32,7 @@ public class CcRpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner testRunner() {
         return x -> {
-//            testCase();
+            testCase();
         };
     }
 

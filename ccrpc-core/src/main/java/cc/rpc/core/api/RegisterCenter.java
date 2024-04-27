@@ -15,6 +15,8 @@ public interface RegisterCenter {
 
     void stop();
 
+    void heartbeat();
+
     void register(ServiceMeta service, InstanceMeta instance);
 
     void unregister(ServiceMeta service, InstanceMeta instance);
@@ -41,6 +43,11 @@ public interface RegisterCenter {
         @Override
         public void stop() {
             log.info("static register center stop");
+        }
+
+        @Override
+        public void heartbeat() {
+
         }
 
         @Override

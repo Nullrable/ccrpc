@@ -28,6 +28,12 @@ ccrpc:
       unit: B001
       tc: 200 # 流控
 
+ccregistry:
+  servers:
+    - http://localhost:8787
+    - http://localhost:8788
+    - http://localhost:8789
+
 logging:
   level:
     root: info

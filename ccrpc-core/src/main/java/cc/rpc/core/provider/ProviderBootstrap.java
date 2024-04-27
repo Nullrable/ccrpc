@@ -72,6 +72,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
         instance = createInstance();
         registerCenter.start();
+        registerCenter.heartbeat();
         skeleton.keySet().forEach(this::registerService);
 
         log.info("provider bootstrap started");
