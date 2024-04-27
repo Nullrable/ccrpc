@@ -34,6 +34,8 @@ import org.springframework.util.LinkedMultiValueMap;
 @Slf4j
 public class CcRegisterCenter implements RegisterCenter {
 
+    private static final long LONG_POLLING_READ_TIMEOUT = 90_000;
+
     private static OkHttpClient okHttpClient;
 
     private static final MediaType JSON_MEDIA = MediaType.parse("application/json; charset=utf-8");
@@ -183,7 +185,14 @@ public class CcRegisterCenter implements RegisterCenter {
                 if (lastServerUrl.get() == null) {
                     lastServerUrl.set(registerServerLoadBalancer.chooseOneFrom(servers));
                 }
-                Request req = new Request.Builder().url(lastServerUrl.get() + "/subscribe?service=" + service.toPath()).build();
+
+                //服务端设置long pulling timeout 为 60s.
+                Request req = new Request.Builder()
+                        .url(lastServerUrl.get() + "/subscribe?service=" + service.toPath())
+                        // 设置请求的读取超时时间
+                        .tag(OkHttpClient.class, okHttpClient.newBuilder().readTimeout(LONG_POLLING_READ_TIMEOUT, TimeUnit.MILLISECONDS).build())
+                        .build();
+
                 try (Response response = okHttpClient.newCall(req).execute()) {
                     if (response.isSuccessful()) {
                         String json = response.body().string();
