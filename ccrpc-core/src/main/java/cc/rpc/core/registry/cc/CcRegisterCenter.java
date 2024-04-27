@@ -169,7 +169,7 @@ public class CcRegisterCenter implements RegisterCenter {
         if (refreshInterval < 0) {
             longPulling(service, listener);
         } else {
-            fixedDelay(service, listener);
+            scheduleWithFixedDelay(service, listener);
         }
     }
 
@@ -206,7 +206,7 @@ public class CcRegisterCenter implements RegisterCenter {
         });
     }
 
-    private void fixedDelay(final ServiceMeta service, final ChangedListener listener) {
+    private void scheduleWithFixedDelay(final ServiceMeta service, final ChangedListener listener) {
         subscribeExecutor.scheduleWithFixedDelay(() -> {
             Long currentVersion = VERSIONS.getOrDefault(service.toPath(), -1L);
 
