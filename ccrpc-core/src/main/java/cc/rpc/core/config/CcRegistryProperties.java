@@ -12,4 +12,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class CcRegistryProperties {
 
     private List<String> servers;
+
+    private long refreshInterval = -1L;
 }

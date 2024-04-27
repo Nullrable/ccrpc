@@ -39,11 +39,13 @@ public class CcRegisterCenter implements RegisterCenter {
 
     private static final long CONNECT_TIMEOUT_MILLIS = 1000;
 
-    private static final long READ_TIMEOUT_MILLIS = 5000;
+    private static final long READ_TIMEOUT_MILLIS = 50_000;
 
     private Map<String, Long> VERSIONS = new HashMap<>();
 
     private List<String> servers;
+
+    private long refreshInterval;
 
     private LinkedMultiValueMap<InstanceMeta, ServiceMeta> map = new LinkedMultiValueMap<>();
 
@@ -54,6 +56,7 @@ public class CcRegisterCenter implements RegisterCenter {
 
     public CcRegisterCenter(final CcRegistryProperties properties) {
         this.servers = properties.getServers();
+        this.refreshInterval = properties.getRefreshInterval();
     }
 
     @Override
@@ -81,7 +84,7 @@ public class CcRegisterCenter implements RegisterCenter {
 
                 RequestBody body = RequestBody.create(JSON_MEDIA, JSON.toJSONString(instance));
                 Request req = new Request.Builder().url(leaderUrl + "/heartbeat?services=" + services).post(body).build();
-                try (Response response = okHttpClient.newCall(req).execute()){
+                try (Response response = okHttpClient.newCall(req).execute()) {
 
                     log.info("service = {}, heartbeat response: {}", services, response.body().string());
 
@@ -106,7 +109,7 @@ public class CcRegisterCenter implements RegisterCenter {
             List<JSONObject> list = JSON.parseObject(json, List.class);
             list.forEach(s -> serverInstants.add(s.toJavaObject(Server.class)));
         }
-        Server server =  null;
+        Server server = null;
         while (server == null) {
             server = serverInstants.stream().filter(Server::isLeader).findFirst().orElse(null);
             Thread.sleep(1000);
@@ -163,7 +166,47 @@ public class CcRegisterCenter implements RegisterCenter {
     @SneakyThrows
     @Override
     public void subscribe(final ServiceMeta service, final ChangedListener listener) {
+        if (refreshInterval < 0) {
+            longPulling(service, listener);
+        } else {
+            fixedDelay(service, listener);
+        }
+    }
 
+    private void longPulling(final ServiceMeta service, final ChangedListener listener) {
+        log.info(" ====>>>> long pulling subscribe server: {}", service.toPath());
+        subscribeExecutor.submit(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                long startTime = System.currentTimeMillis();
+                Request req = new Request.Builder().url(servers.get(0) + "/subscribe?service=" + service.toPath()).build();
+                try (Response response = okHttpClient.newCall(req).execute()) {
+                    if (response.isSuccessful()) {
+                        String json = response.body().string();
+                        List<JSONObject> list = JSON.parseObject(json, List.class);
+                        List<InstanceMeta> instanceMetas = new ArrayList<>();
+                        list.forEach(s -> instanceMetas.add(s.toJavaObject(InstanceMeta.class)));
+                        listener.fire(new Event(instanceMetas));
+
+                        log.info(" ====>>>> long pulling service changed: {}, {}", service.toPath(), instanceMetas);
+                    } else {
+                        log.info(" ====>>>> long pulling response failed: {}", response.body().string());
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+                long diffTime = System.currentTimeMillis() - startTime;
+                if (diffTime < 1000) {
+                    log.info(" ====>>>> long pulling waiting: {}", service.toPath());
+                    try {
+                        Thread.sleep(1000 - diffTime);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        });
+    }
+
+    private void fixedDelay(final ServiceMeta service, final ChangedListener listener) {
         subscribeExecutor.scheduleWithFixedDelay(() -> {
             Long currentVersion = VERSIONS.getOrDefault(service.toPath(), -1L);
 
@@ -183,23 +226,6 @@ public class CcRegisterCenter implements RegisterCenter {
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
-        }, 1, 1, TimeUnit.SECONDS);
-
-
-
-//        Request req = new Request.Builder().url(servers.get(0) + "/subscribe?service=" + service.toPath()).build();
-//        try (Response response = okHttpClient.newCall(req).execute()) {
-//            if (response.isSuccessful()) {
-//                String json = response.body().string();
-//                List<JSONObject> list = JSON.parseObject(json, List.class);
-//                List<InstanceMeta> instanceMetas = new ArrayList<>();
-//                list.forEach(s -> instanceMetas.add(s.toJavaObject(InstanceMeta.class)));
-//                listener.fire(new Event(instanceMetas));
-//
-//                log.info("service changed: {}, {}", service.toPath(), instanceMetas);
-//            }
-//        } finally {
-//            subscribe(service, listener);
-//        }
+        }, 1, refreshInterval, TimeUnit.MILLISECONDS);
     }
 }

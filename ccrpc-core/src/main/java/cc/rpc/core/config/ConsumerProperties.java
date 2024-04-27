@@ -19,7 +19,7 @@ public class ConsumerProperties {
 
     private int connectTimeout = 5000;
 
-    private int readTimeout = 1000;
+    private int readTimeout = 180_000;
 
     private int halfOpenInitialDelay = 10;
 
