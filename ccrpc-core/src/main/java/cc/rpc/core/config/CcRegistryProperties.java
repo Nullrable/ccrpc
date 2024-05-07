@@ -13,5 +13,8 @@ public class CcRegistryProperties {
 
     private List<String> servers;
 
+    /**
+     * 刷新注册中心的时间间隔
+     */
     private long refreshInterval = -1L;
 }

@@ -50,7 +50,7 @@ public class CcRegisterCenter implements RegisterCenter {
 
     private long refreshInterval;
 
-    private LinkedMultiValueMap<InstanceMeta, ServiceMeta> map = new LinkedMultiValueMap<>();
+    private LinkedMultiValueMap<InstanceMeta, ServiceMeta> serviceMetaMap = new LinkedMultiValueMap<>();
 
     private ScheduledExecutorService heartBeatExecutor = new ScheduledThreadPoolExecutor(1);
 
@@ -79,22 +79,20 @@ public class CcRegisterCenter implements RegisterCenter {
     public void heartbeat() {
         //这个是个provider用的，consumer 不需要的
         heartBeatExecutor.scheduleWithFixedDelay(() -> {
-            String leaderUrl = leader(servers);
+            String leaderUrl = leader();
 
-            map.keySet().parallelStream().forEach(instance -> {
+            serviceMetaMap.keySet().parallelStream().forEach(instance -> {
 
 
-                List<ServiceMeta> serviceMetas = map.get(instance);
+                List<ServiceMeta> serviceMetas = serviceMetaMap.get(instance);
                 String services = serviceMetas.stream().map(ServiceMeta::toPath).collect(Collectors.joining(","));
 
                 RequestBody body = RequestBody.create(JSON_MEDIA, JSON.toJSONString(instance));
                 Request req = new Request.Builder().url(leaderUrl + "/heartbeat?services=" + services).post(body).build();
                 try (Response response = okHttpClient.newCall(req).execute()) {
-
-                    log.info("service = {}, heartbeat response: {}", services, response.body().string());
-
+                    log.info(" ====>>>> heartbeat success service = {}, response: {}", services, response.body().string());
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    log.error(" ====>>>> heartbeat failed service = {}", services);
                 }
             });
 
@@ -102,7 +100,7 @@ public class CcRegisterCenter implements RegisterCenter {
     }
 
     @SneakyThrows
-    private String leader(List<String> servers) {
+    private String leader() {
 
         Request req = new Request.Builder().url(registerServerLoadBalancer.chooseOneFrom(servers) + "/cluster").build();
         List<Server> serverInstants = new ArrayList<>();
@@ -125,10 +123,10 @@ public class CcRegisterCenter implements RegisterCenter {
     @Override
     public void register(final ServiceMeta service, final InstanceMeta instance) {
         RequestBody body = RequestBody.create(JSON_MEDIA, JSON.toJSONString(instance));
-        Request req = new Request.Builder().url(leader(servers) + "/register?service=" + service.toPath()).post(body).build();
+        Request req = new Request.Builder().url(leader() + "/register?service=" + service.toPath()).post(body).build();
         okHttpClient.newCall(req).execute();
 
-        map.add(instance, service);
+        serviceMetaMap.add(instance, service);
 
         log.info("register service: {}", service.toPath());
 
@@ -138,10 +136,10 @@ public class CcRegisterCenter implements RegisterCenter {
     @Override
     public void unregister(final ServiceMeta service, final InstanceMeta instance) {
         RequestBody body = RequestBody.create(JSON_MEDIA, JSON.toJSONString(instance));
-        Request req = new Request.Builder().url(leader(servers) + "/unregister?service=" + service.toPath()).post(body).build();
+        Request req = new Request.Builder().url(leader() + "/unregister?service=" + service.toPath()).post(body).build();
         okHttpClient.newCall(req).execute();
 
-        map.remove(instance, service);
+        serviceMetaMap.remove(instance, service);
 
         log.info("unregister service: {}", service.toPath());
     }
