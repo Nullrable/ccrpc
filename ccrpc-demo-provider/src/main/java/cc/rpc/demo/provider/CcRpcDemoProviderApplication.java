@@ -1,7 +1,7 @@
 package cc.rpc.demo.provider;
 
 import cc.rpc.core.config.ProviderConfig;
-import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
+import io.cc.config.client.annotation.EnableCcConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
 @Import(ProviderConfig.class)
-@EnableApolloConfig
+//@EnableApolloConfig
+@EnableCcConfig
 @Slf4j
 public class CcRpcDemoProviderApplication {
 

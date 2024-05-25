@@ -143,6 +143,11 @@ public class UserServiceImpl implements UserService {
         setPorts(port);
     }
 
+    @Override
+    public void exception() {
+        throw new RuntimeException("i am exception");
+    }
+
     public void setPorts(final String ports) {
         this.ports = ports;
     }

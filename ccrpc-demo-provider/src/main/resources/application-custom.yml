@@ -1,22 +1,15 @@
 server:
   port: 9000
 
-app:
-  id: tgrpc
+## cconfig
+ccconfig:
+  app: demo-provider
+  env: dev
+  ns: public
+  server: http://localhost:9000
 
-# Apollo 配置中心地址
-#apollo:
-#  meta: http://localhost:8080
-#  cluster: default # 指定集群名称
-#  namespaces: application # 指定命名空间
-#  env: LOCAL
-#  bootstrap:
-#    enabled: true # 是否开启自动配置
-
+## ccrpc
 ccrpc:
-  zk:
-    server: 127.0.0.1:2181
-    root: ccrpc2
   app:
     id: app1
     namespace: public
@@ -28,6 +21,7 @@ ccrpc:
       unit: B001
       tc: 200 # 流控
 
+# ccregistry
 ccregistry:
   servers:
     - http://localhost:8787

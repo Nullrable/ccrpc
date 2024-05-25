@@ -5,9 +5,6 @@ server:
   port: 8000
 
 ccrpc:
-  zk:
-    server: 127.0.0.1:2181
-    root: ccrpc2
   app:
     id: app1
     namespace: public
@@ -20,6 +17,12 @@ ccrpc:
     fault-limit: 10 # 30s 内10次错误则隔离
     half-open-initial-delay: 10000
     half-open-delay: 60000
+
+ccconfig:
+  app: demo-consumer
+  env: dev
+  ns: public
+  server: http://localhost:9000
 
 ccregistry:
   servers:

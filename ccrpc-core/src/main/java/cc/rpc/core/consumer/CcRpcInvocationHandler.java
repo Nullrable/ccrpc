@@ -61,7 +61,7 @@ public class CcRpcInvocationHandler implements InvocationHandler {
         singleService.scheduleWithFixedDelay(this::halfOpen,
                 context.getConsumerProperties().getHalfOpenInitialDelay(),
                 context.getConsumerProperties().getHalfOpenDelay(),
-                TimeUnit.SECONDS);
+                TimeUnit.MILLISECONDS);
     }
 
     @Override

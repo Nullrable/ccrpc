@@ -1,0 +1,11 @@
+###
+GET http://localhost:8000/getFaultLimit
+
+###
+GET http://localhost:8000/findId?id=1
+
+###
+GET http://localhost:8000/exception
+
+###
+GET http://localhost:8000/timeout

@@ -42,4 +42,6 @@ public interface UserService {
 
     void setPort(String port);
 
+    void exception();
+
 }

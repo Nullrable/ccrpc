@@ -5,6 +5,7 @@ package cc.rpc.core.api;
  */
 public class CcRpcException extends RuntimeException {
     public CcRpcException() {
+
     }
 
     public CcRpcException(final String message) {

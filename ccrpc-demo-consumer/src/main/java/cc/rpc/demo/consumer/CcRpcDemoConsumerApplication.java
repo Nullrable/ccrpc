@@ -5,6 +5,7 @@ import cc.rpc.core.api.RpcContext;
 import cc.rpc.core.config.ConsumerConfig;
 import cc.rpc.demo.api.User;
 import cc.rpc.demo.api.UserService;
+import io.cc.config.client.annotation.EnableCcConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Import;
 @SpringBootApplication
 @Import(ConsumerConfig.class)
 @Slf4j
+@EnableCcConfig
 public class CcRpcDemoConsumerApplication {
 
     public static void main(String[] args) {
@@ -32,7 +34,7 @@ public class CcRpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner testRunner() {
         return x -> {
-            testCase();
+//            testCase();
         };
     }
 
