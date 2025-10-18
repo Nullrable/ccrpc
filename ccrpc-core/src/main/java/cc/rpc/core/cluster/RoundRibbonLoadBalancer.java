@@ -1,5 +1,6 @@
 package cc.rpc.core.cluster;
 
+import cc.rpc.core.api.Invocation;
 import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.meta.InstanceMeta;
 import java.util.List;
@@ -13,7 +14,7 @@ public class RoundRibbonLoadBalancer implements LoadBalancer {
     AtomicInteger index = new AtomicInteger(0);
 
     @Override
-    public InstanceMeta choose(final List<InstanceMeta> providers) {
+    public InstanceMeta choose(final List<InstanceMeta> providers, Invocation invocation) {
         if (providers == null || providers.isEmpty()) {
             return null;
         }

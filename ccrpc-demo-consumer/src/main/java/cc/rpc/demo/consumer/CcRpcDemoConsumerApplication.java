@@ -34,6 +34,8 @@ public class CcRpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner testRunner() {
         return x -> {
+            List<User> test4 = userService.findById(List.of(1, 2, 3));
+            log.info("==============> test4: " + test4.get(0).getId());
 //            testCase();
         };
     }

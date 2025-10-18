@@ -2,9 +2,13 @@ package cc.rpc.core.consumer;
 
 import cc.rpc.core.api.CcRpcException;
 import cc.rpc.core.api.Filter;
+import cc.rpc.core.api.Invocation;
+import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.RpcContext;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
+import cc.rpc.core.cluster.ConsistentHashLoadBalancer;
+import cc.rpc.core.cluster.ShortestResponseLoadBalancer;
 import cc.rpc.core.consumer.http.OkHttpInvoker;
 import cc.rpc.core.governance.SlidingTimeWindow;
 import cc.rpc.core.meta.InstanceMeta;
@@ -89,7 +93,17 @@ public class CcRpcInvocationHandler implements InvocationHandler {
             InstanceMeta instance;
             if (halfOpenProviders.isEmpty()) {
                 List<InstanceMeta> nodes = context.getRouter().route(providers);
-                instance = context.getLoadBalancer().choose(nodes);
+
+                LoadBalancer lb = context.getLoadBalancer();
+
+                if (lb instanceof ConsistentHashLoadBalancer) {
+                    Invocation invocation = new Invocation();
+                    invocation.putConsistentHashArg(service.getName() + "." + MethodUtil.methodSign(method));
+                    instance = context.getLoadBalancer().choose(nodes, invocation);
+                } else {
+                    instance = context.getLoadBalancer().choose(nodes, null);
+                }
+
             } else {
                 instance = halfOpenProviders.remove(0);
             }
@@ -98,8 +112,21 @@ public class CcRpcInvocationHandler implements InvocationHandler {
             String url = instance.toUrl();
 
             try {
+
+                long start = System.currentTimeMillis();
+
                 log.debug(" ========> retries: {} invoker url: {}", i, instance.toUrl());
+                System.out.println("request: " + JSON.toJSONString(request));
                 responseBody = httpInvoker.post(url, request);
+
+                long responseTime = System.currentTimeMillis() - start;
+
+                log.debug(" ========> response tome: {}ms invoker url: {}", responseTime, instance.toUrl());
+
+                //记录最短响应时间，用于负载均衡
+                if (context.getLoadBalancer() instanceof ShortestResponseLoadBalancer lb) {
+                    lb.recordRequest(instance, responseTime);
+                }
             } catch (Exception ex){
                 log.error(ex.getMessage(), ex);
 

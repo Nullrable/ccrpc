@@ -47,4 +47,11 @@ public class InstanceMeta {
        return JSON.toJSONString(this.getParameters());
     }
 
+    public Integer getWeight() {
+        if (getParameters() != null && getParameters().get("weight") != null) {
+            return Integer.valueOf(getParameters().get("weight"));
+        }
+        return null;
+    }
+
 }

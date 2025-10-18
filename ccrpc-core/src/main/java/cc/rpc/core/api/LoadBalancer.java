@@ -8,12 +8,6 @@ import java.util.List;
  */
 public interface LoadBalancer {
 
-    InstanceMeta choose(List<InstanceMeta> providers);
+    InstanceMeta choose(List<InstanceMeta> providers, Invocation invocation);
 
-    LoadBalancer Default = providers -> {
-        if (providers == null || providers.isEmpty()) {
-            return null;
-        }
-        return providers.get(0);
-    };
 }

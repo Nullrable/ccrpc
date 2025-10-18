@@ -27,8 +27,8 @@ ccconfig:
 ccregistry:
   servers:
     - http://localhost:8787
-    - http://localhost:8788
-    - http://localhost:8789
+#    - http://localhost:8788
+#    - http://localhost:8789
 
 logging:
   level:

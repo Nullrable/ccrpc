@@ -5,8 +5,10 @@ import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.api.RegisterCenter;
 import cc.rpc.core.api.Router;
 import cc.rpc.core.api.RpcContext;
+import cc.rpc.core.cluster.ConsistentHashLoadBalancer;
 import cc.rpc.core.cluster.GrayRouter;
 import cc.rpc.core.cluster.RoundRibbonLoadBalancer;
+import cc.rpc.core.cluster.ShortestResponseLoadBalancer;
 import cc.rpc.core.consumer.ConsumerBootstrap;
 import cc.rpc.core.filter.ContextParameterFilter;
 import cc.rpc.core.registry.cc.CcRegisterCenter;
@@ -52,7 +54,7 @@ public class ConsumerConfig {
 
     @Bean
     public LoadBalancer loadBalancer() {
-        return new RoundRibbonLoadBalancer();
+        return new ShortestResponseLoadBalancer();
     }
     @Bean
     public Router router() {
