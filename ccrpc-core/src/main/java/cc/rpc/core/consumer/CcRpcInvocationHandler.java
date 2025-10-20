@@ -8,6 +8,7 @@ import cc.rpc.core.api.RpcContext;
 import cc.rpc.core.api.RpcRequest;
 import cc.rpc.core.api.RpcResponse;
 import cc.rpc.core.cluster.ConsistentHashLoadBalancer;
+import cc.rpc.core.cluster.LeastActiveLoadBalancer;
 import cc.rpc.core.cluster.ShortestResponseLoadBalancer;
 import cc.rpc.core.consumer.http.OkHttpInvoker;
 import cc.rpc.core.governance.SlidingTimeWindow;
@@ -126,6 +127,11 @@ public class CcRpcInvocationHandler implements InvocationHandler {
                 //记录最短响应时间，用于负载均衡
                 if (context.getLoadBalancer() instanceof ShortestResponseLoadBalancer lb) {
                     lb.recordRequest(instance, responseTime);
+                }
+
+                //去除活跃连接计数
+                if (context.getLoadBalancer() instanceof LeastActiveLoadBalancer lb) {
+                    lb.decrementConnections(instance);
                 }
             } catch (Exception ex){
                 log.error(ex.getMessage(), ex);

@@ -7,12 +7,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 /**
@@ -53,15 +55,24 @@ public class ShortestResponseLoadBalancer implements LoadBalancer {
     }
 
     private void addNodes(final List<InstanceMeta> providers) {
-        for (InstanceMeta provider : providers) {
-            serverNodes.putIfAbsent(provider.toPath(), new ServerNode(provider));
-        }
+        Set<String> currentPaths = providers.stream()
+                .map(InstanceMeta::toPath)
+                .collect(Collectors.toSet());
 
+        // 移除下线节点
+        serverNodes.keySet().removeIf(k -> !currentPaths.contains(k));
+
+        // 增加新节点
+        for (InstanceMeta provider : providers) {
+            serverNodes.computeIfAbsent(provider.toPath(), k -> new ServerNode(provider))
+                    .setInstanceMeta(provider);
+        }
     }
 
     @Override
     public InstanceMeta choose(final List<InstanceMeta> providers, Invocation invocation) {
 
+        //这个有性能问题，serverNodes 每次调用都要判断，性能较差
         addNodes(providers);
 
         List<ServerNode> servers = serverNodes.values().stream().filter(p -> p.getInstanceMeta().toPath().equals(p.getInstanceMeta().toPath())).toList();
@@ -110,7 +121,7 @@ public class ShortestResponseLoadBalancer implements LoadBalancer {
     @Getter
     private static class ServerNode {
 
-        private final InstanceMeta instanceMeta;
+        private InstanceMeta instanceMeta;
         private final AtomicLong totalResponseTime;  // 总响应时间
         private final AtomicLong requestCount;        // 请求计数
         private final AtomicLong activeConnections;   // 活跃连接数
@@ -131,6 +142,10 @@ public class ShortestResponseLoadBalancer implements LoadBalancer {
                 return 0;
             }
             return totalResponseTime.get() / count;
+        }
+
+        public void setInstanceMeta(final InstanceMeta instanceMeta) {
+            this.instanceMeta = instanceMeta;
         }
 
         // 记录请求响应时间
