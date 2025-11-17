@@ -5,6 +5,7 @@ import cc.rpc.core.api.LoadBalancer;
 import cc.rpc.core.meta.InstanceMeta;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -12,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class WeightedRandomLoadBalancer implements LoadBalancer {
-
-    private final Random random = new Random();
 
     @Override
     public InstanceMeta choose(final List<InstanceMeta> providers, Invocation invocation) {
@@ -26,7 +25,7 @@ public class WeightedRandomLoadBalancer implements LoadBalancer {
             return providers.get(providers.size() - 1);
         }
 
-        int randomWeight = random.nextInt(totalWeight);
+        int randomWeight = ThreadLocalRandom.current().nextInt(totalWeight);
         int currentWeight = 0;
         for (InstanceMeta provider : providers) {
             if (provider.getWeight() != null) {
